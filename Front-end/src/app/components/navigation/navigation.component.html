@@ -2,7 +2,7 @@
   <div class="nav-container">
     <div class="nav-brand">
       <a routerLink="/" class="brand-link">
-        <span class="brand-text">UK Club</span>
+        <span class="brand-text">UK Sports Club</span>
       </a>
     </div>
     
@@ -14,7 +14,7 @@
     
     <ul class="nav-menu" [class.active]="isMenuOpen">
       <li class="nav-item">
-        <a routerLink="/" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Home</a>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()" class="nav-link">Home</a>
       </li>
       <li class="nav-item">
         <a routerLink="/membership" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Membership</a>

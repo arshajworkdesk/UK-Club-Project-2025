@@ -10,7 +10,7 @@ import { fadeIn } from './animations/route.animations';
   animations: [fadeIn]
 })
 export class AppComponent implements OnInit {
-  title = 'UK Club';
+  title = 'UK Sports Club';
 
   constructor(private themeService: ThemeService) {}
 

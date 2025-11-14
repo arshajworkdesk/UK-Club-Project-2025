@@ -1,4 +1,4 @@
-# UK Club Frontend - Angular Application
+# UK Sports Club Frontend - Angular Application
 
 A futuristic, animated Angular registration page with glassmorphism design and neon accents.
 
