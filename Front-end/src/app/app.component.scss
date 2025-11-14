@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.router-wrapper {
+  position: relative;
+  min-height: calc(100vh - 70px);
+  z-index: 1;
+}
+

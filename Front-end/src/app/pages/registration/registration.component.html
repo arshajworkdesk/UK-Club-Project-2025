@@ -1,0 +1,192 @@
+<div class="registration-container" [@fadeInUp]>
+  <!-- Modern Background -->
+  <div class="modern-bg">
+    <!-- Subtle Background Pattern -->
+    <div class="bg-pattern"></div>
+    
+    <!-- Background Image Overlay -->
+    <div class="bg-image-overlay"></div>
+  </div>
+
+  <div class="glass-card" [@cardEntrance]>
+    <div class="card-header" [@headerEntrance]>
+      <h1 class="title">
+        <span class="title-word">Join</span>
+        <span class="title-word">UK</span>
+        <span class="title-word">Club</span>
+      </h1>
+      <p class="subtitle">Apply for Membership</p>
+    </div>
+
+    <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-form" [@staggerAnimation]>
+      <!-- Full Name Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <input
+            type="text"
+            id="fullName"
+            formControlName="fullName"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('fullName')"
+            [class.focused]="fullName?.value"
+            placeholder=" "
+            autocomplete="name"
+          />
+          <label for="fullName" class="form-label">Full Name</label>
+          <div class="input-glow"></div>
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('fullName')" [@slideIn]>
+          {{ getErrorMessage('fullName') }}
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('email')"
+            [class.focused]="email?.value"
+            placeholder=" "
+            autocomplete="email"
+          />
+          <label for="email" class="form-label">Email</label>
+          <div class="input-glow"></div>
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('email')" [@slideIn]>
+          {{ getErrorMessage('email') }}
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="password"
+            formControlName="password"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('password')"
+            [class.focused]="password?.value"
+            placeholder=" "
+            autocomplete="new-password"
+          />
+          <label for="password" class="form-label">Password</label>
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            tabindex="-1"
+          >
+            <span *ngIf="!showPassword">👁️</span>
+            <span *ngIf="showPassword">🙈</span>
+          </button>
+          <div class="input-glow"></div>
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('password')" [@slideIn]>
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="confirmPassword"
+            formControlName="confirmPassword"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('confirmPassword') || registrationForm.hasError('passwordMismatch')"
+            [class.focused]="confirmPassword?.value"
+            placeholder=" "
+            autocomplete="new-password"
+          />
+          <label for="confirmPassword" class="form-label">Confirm Password</label>
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="toggleConfirmPasswordVisibility()"
+            tabindex="-1"
+          >
+            <span *ngIf="!showConfirmPassword">👁️</span>
+            <span *ngIf="showConfirmPassword">🙈</span>
+          </button>
+          <div class="input-glow"></div>
+        </div>
+        <div class="error-message" *ngIf="(isFieldInvalid('confirmPassword') || registrationForm.hasError('passwordMismatch')) && confirmPassword?.touched" [@slideIn]>
+          {{ getErrorMessage('confirmPassword') }}
+        </div>
+      </div>
+
+      <!-- Date of Birth Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <input
+            type="date"
+            id="dob"
+            formControlName="dob"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('dob')"
+            [class.focused]="dob?.value"
+          />
+          <label for="dob" class="form-label">Date of Birth</label>
+          <div class="input-glow"></div>
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('dob')" [@slideIn]>
+          {{ getErrorMessage('dob') }}
+        </div>
+      </div>
+
+      <!-- Gender Field -->
+      <div class="form-group">
+        <div class="input-wrapper">
+          <select
+            id="gender"
+            formControlName="gender"
+            class="form-input form-select"
+            [class.invalid]="isFieldInvalid('gender')"
+            [class.focused]="gender?.value"
+          >
+            <option value="" disabled>Select Gender</option>
+            <option *ngFor="let option of genderOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <label for="gender" class="form-label">Gender</label>
+          <div class="input-glow"></div>
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('gender')" [@slideIn]>
+          {{ getErrorMessage('gender') }}
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="submit-button"
+        [class.loading]="isSubmitting"
+        [disabled]="isSubmitting"
+      >
+        <span *ngIf="!isSubmitting" class="button-text">Submit Membership Application</span>
+        <span *ngIf="isSubmitting" class="button-loading">
+          <span class="spinner"></span>
+          Submitting...
+        </span>
+      </button>
+
+      <!-- Success Message -->
+      <div class="success-message" *ngIf="showSuccessMessage" [@slideIn]>
+        ✓ Your membership request has been submitted. Awaiting admin approval.
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="errorMessage" [@slideIn]>
+        ✗ {{ errorMessage }}
+      </div>
+    </form>
+  </div>
+</div>
+

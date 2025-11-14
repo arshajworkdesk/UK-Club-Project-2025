@@ -1,0 +1,209 @@
+@import '../../../styles.scss';
+
+.admin-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  z-index: 10;
+  transition: all var(--duration-slow) var(--ease-smooth);
+  
+  &:hover {
+    box-shadow: var(--shadow-2xl), var(--glow-primary);
+    transform: translateY(-2px);
+    border-color: var(--border-focus);
+  }
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface-base);
+  border: 1.5px solid var(--border-medium);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  outline: none;
+  font-family: inherit;
+  
+  &::placeholder {
+    color: var(--text-light);
+  }
+  
+  &:focus {
+    border-color: var(--border-focus);
+    background: var(--surface-elevated);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), var(--glow-primary);
+    transform: translateY(-1px);
+  }
+  
+  &.invalid {
+    border-color: var(--error);
+    animation: shake var(--duration-slow) var(--ease-in-out);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+  
+  &:hover:not(:focus) {
+    border-color: var(--border-dark);
+    background: var(--surface-hover);
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 0.875rem;
+  margin-top: 6px;
+  padding-left: 4px;
+  font-weight: 400;
+}
+
+.form-actions {
+  margin-top: 8px;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  border: none;
+  border-radius: 8px;
+  color: var(--text-white);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  box-shadow: var(--shadow-md), var(--glow-primary);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  
+  &:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--glow-primary-hover);
+    border-color: rgba(59, 130, 246, 0.5);
+  }
+  
+  &:active:not(:disabled) {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-active) 100%);
+    transform: translateY(0);
+    box-shadow: var(--shadow-md);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.button-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: var(--text-white);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .admin-login-container {
+    padding: 90px 16px 40px;
+  }
+  
+  .login-card {
+    padding: 32px 24px;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+}
+

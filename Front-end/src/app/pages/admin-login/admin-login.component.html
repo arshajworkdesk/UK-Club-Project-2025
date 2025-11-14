@@ -1,0 +1,62 @@
+<div class="admin-login-container" [@fadeIn]>
+  <div class="login-card">
+    <div class="card-header">
+      <h1 class="title">Admin Login</h1>
+      <p class="subtitle">Sign in to access the admin dashboard</p>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email" class="form-label">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-input"
+          [class.invalid]="isFieldInvalid('email')"
+          placeholder="Enter your admin email"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          {{ getErrorMessage('email') }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-wrapper">
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="form-input"
+            [class.invalid]="isFieldInvalid('password')"
+            placeholder="Enter your password"
+          />
+        </div>
+        <div class="error-message" *ngIf="isFieldInvalid('password')">
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage" style="margin-top: 16px;">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="submit-button"
+          [class.loading]="isSubmitting"
+          [disabled]="isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">Login</span>
+          <span *ngIf="isSubmitting" class="button-loading">
+            <span class="spinner"></span>
+            Logging in...
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+

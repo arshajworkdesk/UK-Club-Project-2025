@@ -1,0 +1,147 @@
+<div class="admin-dashboard-container" [@fadeIn]>
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1 class="page-title">Admin Dashboard</h1>
+      <p class="page-subtitle">Manage members and admin assignments</p>
+    </div>
+    <button class="logout-button" (click)="logout()">Logout</button>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div class="message-container" *ngIf="successMessage || errorMessage">
+    <div class="success-message" *ngIf="successMessage">
+      ✓ {{ successMessage }}
+    </div>
+    <div class="error-message" *ngIf="errorMessage">
+      ✗ {{ errorMessage }}
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-container">
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'pending'"
+      (click)="switchTab('pending')"
+    >
+      Pending Members
+      <span class="badge" *ngIf="pendingMembers.length > 0">{{ pendingMembers.length }}</span>
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'approved'"
+      (click)="switchTab('approved')"
+    >
+      Approved Members
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="activeTab === 'admins'"
+      (click)="switchTab('admins')"
+    >
+      Admins
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="dashboard-content">
+    <!-- Pending Members Tab -->
+    <div *ngIf="activeTab === 'pending'" class="tab-content">
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading pending members...</p>
+      </div>
+
+      <div *ngIf="!isLoading && pendingMembers.length === 0" class="empty-state">
+        <p>No pending membership requests</p>
+      </div>
+
+      <div *ngIf="!isLoading && pendingMembers.length > 0" class="members-list">
+        <div class="member-row" *ngFor="let member of pendingMembers">
+          <div class="member-info">
+            <div class="member-avatar">{{ member.fullName.charAt(0) }}</div>
+            <div class="member-details">
+              <h3 class="member-name">{{ member.fullName }}</h3>
+              <p class="member-email">{{ member.email }}</p>
+              <div class="member-meta">
+                <span>DOB: {{ formatDate(member.dob) }}</span>
+                <span>Gender: {{ formatGender(member.gender) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="member-actions">
+            <button class="btn-approve" (click)="approveMember(member.id)">Approve</button>
+            <button class="btn-reject" (click)="rejectMember(member.id)">Reject</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved Members Tab -->
+    <div *ngIf="activeTab === 'approved'" class="tab-content">
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading approved members...</p>
+      </div>
+
+      <div *ngIf="!isLoading && approvedMembers.length === 0" class="empty-state">
+        <p>No approved members yet</p>
+      </div>
+
+      <div *ngIf="!isLoading && approvedMembers.length > 0" class="members-list">
+        <div class="member-row" *ngFor="let member of approvedMembers">
+          <div class="member-info">
+            <div class="member-avatar">{{ member.fullName.charAt(0) }}</div>
+            <div class="member-details">
+              <h3 class="member-name">{{ member.fullName }}</h3>
+              <p class="member-email">{{ member.email }}</p>
+              <div class="member-meta">
+                <span>DOB: {{ formatDate(member.dob) }}</span>
+                <span>Gender: {{ formatGender(member.gender) }}</span>
+                <span class="status-badge approved">Approved</span>
+              </div>
+            </div>
+          </div>
+          <div class="member-actions">
+            <button 
+              class="btn-admin" 
+              (click)="assignAdmin(member.id)"
+              *ngIf="member.role !== 'admin'"
+            >
+              Make Admin
+            </button>
+            <span class="admin-badge" *ngIf="member.role === 'admin'">Admin</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admins Tab -->
+    <div *ngIf="activeTab === 'admins'" class="tab-content">
+      <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading admins...</p>
+      </div>
+
+      <div *ngIf="!isLoading && admins.length === 0" class="empty-state">
+        <p>No admins found</p>
+      </div>
+
+      <div *ngIf="!isLoading && admins.length > 0" class="members-list">
+        <div class="member-row" *ngFor="let admin of admins">
+          <div class="member-info">
+            <div class="member-avatar admin">{{ admin.fullName.charAt(0) }}</div>
+            <div class="member-details">
+              <h3 class="member-name">{{ admin.fullName }}</h3>
+              <p class="member-email">{{ admin.email }}</p>
+              <div class="member-meta">
+                <span class="role-badge admin">Admin</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,40 @@
+<nav class="navbar" [class.menu-open]="isMenuOpen" [class.scrolled]="isScrolled">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <a routerLink="/" class="brand-link">
+        <span class="brand-text">UK Club</span>
+      </a>
+    </div>
+    
+    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Toggle menu">
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+      <span class="hamburger-line"></span>
+    </button>
+    
+    <ul class="nav-menu" [class.active]="isMenuOpen">
+      <li class="nav-item">
+        <a routerLink="/" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Home</a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/membership" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Membership</a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/members" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Members</a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Contact Us</a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/admin/login" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Admin Login</a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin">
+        <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Dashboard</a>
+      </li>
+      <li class="nav-item" *ngIf="isAdmin">
+        <a (click)="logout()" class="nav-link">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+

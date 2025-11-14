@@ -1,0 +1,127 @@
+<div class="contact-container">
+  <div class="contact-header">
+    <h1 class="page-title">Contact Us</h1>
+    <p class="page-subtitle">Get in touch with UK Club - We'd love to hear from you!</p>
+  </div>
+
+  <div class="contact-content">
+    <div class="contact-info-section">
+      <div class="info-card">
+        <div class="info-icon">📧</div>
+        <h3>Email</h3>
+        <p>{{ clubInfo.email }}</p>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-icon">📞</div>
+        <h3>Phone</h3>
+        <p>{{ clubInfo.phone }}</p>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-icon">📍</div>
+        <h3>Address</h3>
+        <p>{{ clubInfo.address }}</p>
+      </div>
+      
+      <div class="info-card">
+        <div class="info-icon">🕐</div>
+        <h3>Business Hours</h3>
+        <p>{{ clubInfo.hours }}</p>
+      </div>
+    </div>
+
+    <div class="contact-form-section">
+      <div class="form-card">
+        <h2 class="form-title">Send us a Message</h2>
+        
+        <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
+          <div class="form-group">
+            <label for="name" class="form-label">Your Name</label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-input"
+              [class.invalid]="isFieldInvalid('name')"
+              placeholder="Enter your full name"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('name')">
+              {{ getErrorMessage('name') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Your Email</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-input"
+              [class.invalid]="isFieldInvalid('email')"
+              placeholder="Enter your email address"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('email')">
+              {{ getErrorMessage('email') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="subject" class="form-label">Subject</label>
+            <input
+              type="text"
+              id="subject"
+              formControlName="subject"
+              class="form-input"
+              [class.invalid]="isFieldInvalid('subject')"
+              placeholder="What is this regarding?"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('subject')">
+              {{ getErrorMessage('subject') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="message" class="form-label">Message</label>
+            <textarea
+              id="message"
+              formControlName="message"
+              class="form-textarea"
+              [class.invalid]="isFieldInvalid('message')"
+              rows="6"
+              placeholder="Tell us how we can help you..."
+            ></textarea>
+            <div class="error-message" *ngIf="isFieldInvalid('message')">
+              {{ getErrorMessage('message') }}
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="submit-button"
+              [class.loading]="isSubmitting"
+              [disabled]="isSubmitting"
+            >
+              <span *ngIf="!isSubmitting">Send Message</span>
+              <span *ngIf="isSubmitting" class="button-loading">
+                <span class="spinner"></span>
+                Sending...
+              </span>
+            </button>
+          </div>
+
+          <div class="form-messages">
+            <div class="success-message" *ngIf="submitSuccess">
+              ✓ Message sent successfully! We'll get back to you soon.
+            </div>
+            <div class="error-message" *ngIf="submitError">
+              ✗ Failed to send message. Please try again later.
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
