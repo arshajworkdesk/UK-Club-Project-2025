@@ -37,9 +37,12 @@ jobs:
           # IMPORTANT: Replace 'UK-Club-Project-2025' with your actual GitHub repository name
           npm run build -- --configuration production --base-href=/UK-Club-Project-2025/
       
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: Front-end/dist/uk-club-frontend
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          path: Front-end/dist/uk-club-frontend
 
