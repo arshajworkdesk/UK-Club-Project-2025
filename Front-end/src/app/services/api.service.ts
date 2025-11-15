@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
-import { APP_CONSTANTS } from '../constants/app.constants';
+import { environment } from '../../environments/environment';
 import { APP_MESSAGES } from '../constants/app.messages';
 
 export interface RegistrationData {
@@ -76,7 +76,7 @@ export interface ActionResponse {
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = APP_CONSTANTS.API.BASE_URL;
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) { }
 
