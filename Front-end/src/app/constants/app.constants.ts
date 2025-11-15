@@ -10,7 +10,7 @@ export const APP_CONSTANTS = {
   // Club Contact Information
   CLUB_INFO: {
     email: 'contact@ukclub.com',
-    phone: '+44 20 1234 5678',
+    phone: '+44 20 1234 1111',
     address: '123 Club Street, London, UK, SW1A 1AA',
     hours: 'Monday - Friday: 9:00 AM - 6:00 PM'
   },
