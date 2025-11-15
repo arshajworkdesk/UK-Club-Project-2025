@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { APP_CONSTANTS } from '../../constants/app.constants';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-home',
@@ -29,6 +31,10 @@ export class HomeComponent implements OnInit {
       description: 'Enjoy exclusive perks and member-only privileges'
     }
   ];
+
+  // Expose constants for template
+  readonly APP_CONSTANTS = APP_CONSTANTS;
+  readonly APP_MESSAGES = APP_MESSAGES;
 
   ngOnInit(): void {
     // TODO: Fetch actual stats from API

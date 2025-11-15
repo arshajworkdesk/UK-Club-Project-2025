@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
+import { APP_CONSTANTS } from '../../constants/app.constants';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-contact',
@@ -13,12 +15,11 @@ export class ContactComponent implements OnInit {
   submitSuccess = false;
   submitError = false;
 
-  clubInfo = {
-    email: 'contact@ukclub.com',
-    phone: '+44 20 1234 5678',
-    address: '123 Club Street, London, UK, SW1A 1AA',
-    hours: 'Monday - Friday: 9:00 AM - 6:00 PM'
-  };
+  // Expose constants for template
+  readonly APP_CONSTANTS = APP_CONSTANTS;
+  readonly APP_MESSAGES = APP_MESSAGES;
+  
+  clubInfo = APP_CONSTANTS.CLUB_INFO;
 
   constructor(
     private fb: FormBuilder,
@@ -92,16 +93,16 @@ export class ContactComponent implements OnInit {
     const control = this.contactForm.get(fieldName);
     
     if (control?.hasError('required')) {
-      return `${this.getFieldLabel(fieldName)} is required`;
+      return APP_MESSAGES.VALIDATION.REQUIRED(this.getFieldLabel(fieldName));
     }
     
     if (control?.hasError('email')) {
-      return 'Please enter a valid email address';
+      return APP_MESSAGES.VALIDATION.INVALID_EMAIL;
     }
     
     if (control?.hasError('minlength')) {
       const minLength = control.errors?.['minlength']?.requiredLength;
-      return `${this.getFieldLabel(fieldName)} must be at least ${minLength} characters`;
+      return APP_MESSAGES.VALIDATION.MIN_LENGTH(this.getFieldLabel(fieldName), minLength);
     }
     
     return '';
@@ -109,10 +110,10 @@ export class ContactComponent implements OnInit {
 
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      name: 'Name',
-      email: 'Email',
-      subject: 'Subject',
-      message: 'Message'
+      name: APP_MESSAGES.FORM_LABELS.NAME,
+      email: APP_MESSAGES.FORM_LABELS.EMAIL,
+      subject: APP_MESSAGES.FORM_LABELS.SUBJECT,
+      message: APP_MESSAGES.FORM_LABELS.MESSAGE
     };
     return labels[fieldName] || fieldName;
   }

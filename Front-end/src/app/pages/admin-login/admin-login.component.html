@@ -1,20 +1,20 @@
 <div class="admin-login-container" [@fadeIn]>
   <div class="login-card">
     <div class="card-header">
-      <h1 class="title">Admin Login</h1>
-      <p class="subtitle">Sign in to access the admin dashboard</p>
+      <h1 class="title">{{ APP_MESSAGES.UI.ADMIN_LOGIN_TITLE }}</h1>
+      <p class="subtitle">{{ APP_MESSAGES.UI.ADMIN_LOGIN_SUBTITLE }}</p>
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
       <div class="form-group">
-        <label for="email" class="form-label">Email</label>
+        <label for="email" class="form-label">{{ APP_MESSAGES.FORM_LABELS.EMAIL }}</label>
         <input
           type="email"
           id="email"
           formControlName="email"
           class="form-input"
           [class.invalid]="isFieldInvalid('email')"
-          placeholder="Enter your admin email"
+          [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_ADMIN_EMAIL"
         />
         <div class="error-message" *ngIf="isFieldInvalid('email')">
           {{ getErrorMessage('email') }}
@@ -22,7 +22,7 @@
       </div>
 
       <div class="form-group">
-        <label for="password" class="form-label">Password</label>
+        <label for="password" class="form-label">{{ APP_MESSAGES.FORM_LABELS.PASSWORD }}</label>
         <div class="input-wrapper">
           <input
             type="password"
@@ -30,7 +30,7 @@
             formControlName="password"
             class="form-input"
             [class.invalid]="isFieldInvalid('password')"
-            placeholder="Enter your password"
+            [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_PASSWORD"
           />
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('password')">
@@ -49,10 +49,10 @@
           [class.loading]="isSubmitting"
           [disabled]="isSubmitting"
         >
-          <span *ngIf="!isSubmitting">Login</span>
+          <span *ngIf="!isSubmitting">{{ APP_MESSAGES.UI.LOGIN }}</span>
           <span *ngIf="isSubmitting" class="button-loading">
             <span class="spinner"></span>
-            Logging in...
+            {{ APP_MESSAGES.UI.LOGGING_IN }}
           </span>
         </button>
       </div>

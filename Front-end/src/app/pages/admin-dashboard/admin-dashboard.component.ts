@@ -2,7 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ApiService, Member } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
+import { ConfirmationDialogService } from '../../services/confirmation-dialog.service';
 import { fadeIn } from '../../animations/route.animations';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -21,10 +24,15 @@ export class AdminDashboardComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
+  // Expose constants for template
+  readonly APP_MESSAGES = APP_MESSAGES;
+
   constructor(
     private authService: AuthService,
     private apiService: ApiService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService,
+    private confirmationDialog: ConfirmationDialogService
   ) {}
 
   ngOnInit(): void {
@@ -85,70 +93,78 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   approveMember(memberId: number): void {
-    this.apiService.approveMember(memberId).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.successMessage = 'Member approved successfully';
-          this.loadData(); // Reload data
-          setTimeout(() => {
-            this.successMessage = '';
-          }, 3000);
-        }
-      },
-      error: (error) => {
-        console.error('Error approving member:', error);
-        this.errorMessage = 'Failed to approve member';
-        setTimeout(() => {
-          this.errorMessage = '';
-        }, 3000);
+    this.confirmationDialog.show({
+      title: APP_MESSAGES.CONFIRMATION.APPROVE_TITLE,
+      message: APP_MESSAGES.CONFIRMATION.APPROVE_MEMBER,
+      confirmText: APP_MESSAGES.CONFIRMATION.BUTTON_APPROVE,
+      cancelText: APP_MESSAGES.CONFIRMATION.BUTTON_CANCEL,
+      type: 'info'
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.apiService.approveMember(memberId).subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.toastService.success(APP_MESSAGES.SUCCESS.MEMBER_APPROVED);
+              this.loadData(); // Reload data
+            }
+          },
+          error: (error) => {
+            console.error('Error approving member:', error);
+            this.toastService.error(APP_MESSAGES.ERROR.GENERIC_ERROR);
+          }
+        });
       }
     });
   }
 
   rejectMember(memberId: number): void {
-    if (confirm('Are you sure you want to reject this member?')) {
-      this.apiService.rejectMember(memberId).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.successMessage = 'Member rejected';
-            this.loadData(); // Reload data
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 3000);
+    this.confirmationDialog.show({
+      title: APP_MESSAGES.CONFIRMATION.REJECT_TITLE,
+      message: APP_MESSAGES.CONFIRMATION.REJECT_MEMBER,
+      confirmText: APP_MESSAGES.CONFIRMATION.BUTTON_REJECT,
+      cancelText: APP_MESSAGES.CONFIRMATION.BUTTON_CANCEL,
+      type: 'danger'
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.apiService.rejectMember(memberId).subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.toastService.error(APP_MESSAGES.SUCCESS.MEMBER_REJECTED);
+              this.loadData(); // Reload data
+            }
+          },
+          error: (error) => {
+            console.error('Error rejecting member:', error);
+            this.toastService.error(APP_MESSAGES.ERROR.GENERIC_ERROR);
           }
-        },
-        error: (error) => {
-          console.error('Error rejecting member:', error);
-          this.errorMessage = 'Failed to reject member';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   assignAdmin(memberId: number): void {
-    if (confirm('Are you sure you want to assign admin role to this member?')) {
-      this.apiService.assignAdmin(memberId).subscribe({
-        next: (response) => {
-          if (response.success) {
-            this.successMessage = 'Admin role assigned successfully';
-            this.loadData(); // Reload data
-            setTimeout(() => {
-              this.successMessage = '';
-            }, 3000);
+    this.confirmationDialog.show({
+      title: APP_MESSAGES.CONFIRMATION.ASSIGN_ADMIN_TITLE,
+      message: APP_MESSAGES.CONFIRMATION.ASSIGN_ADMIN,
+      confirmText: APP_MESSAGES.CONFIRMATION.BUTTON_ASSIGN,
+      cancelText: APP_MESSAGES.CONFIRMATION.BUTTON_CANCEL,
+      type: 'warning'
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.apiService.assignAdmin(memberId).subscribe({
+          next: (response) => {
+            if (response.success) {
+              this.toastService.success(APP_MESSAGES.SUCCESS.ADMIN_ASSIGNED);
+              this.loadData(); // Reload data
+            }
+          },
+          error: (error) => {
+            console.error('Error assigning admin:', error);
+            this.toastService.error(APP_MESSAGES.ERROR.GENERIC_ERROR);
           }
-        },
-        error: (error) => {
-          console.error('Error assigning admin:', error);
-          this.errorMessage = 'Failed to assign admin role';
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 3000);
-        }
-      });
-    }
+        });
+      }
+    });
   }
 
   logout(): void {

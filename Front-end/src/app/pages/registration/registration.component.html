@@ -16,7 +16,7 @@
         <span class="title-word">Sports</span>
         <span class="title-word">Club</span>
       </h1>
-      <p class="subtitle">Apply for Membership</p>
+      <p class="subtitle">{{ APP_MESSAGES.UI.REGISTRATION_SUBTITLE }}</p>
     </div>
 
     <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="registration-form" [@staggerAnimation]>
@@ -33,7 +33,7 @@
             placeholder=" "
             autocomplete="name"
           />
-          <label for="fullName" class="form-label">Full Name</label>
+          <label for="fullName" class="form-label">{{ APP_MESSAGES.FORM_LABELS.FULL_NAME }}</label>
           <div class="input-glow"></div>
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('fullName')" [@slideIn]>
@@ -54,7 +54,7 @@
             placeholder=" "
             autocomplete="email"
           />
-          <label for="email" class="form-label">Email</label>
+          <label for="email" class="form-label">{{ APP_MESSAGES.FORM_LABELS.EMAIL }}</label>
           <div class="input-glow"></div>
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('email')" [@slideIn]>
@@ -75,7 +75,7 @@
             placeholder=" "
             autocomplete="new-password"
           />
-          <label for="password" class="form-label">Password</label>
+          <label for="password" class="form-label">{{ APP_MESSAGES.FORM_LABELS.PASSWORD }}</label>
           <button
             type="button"
             class="password-toggle"
@@ -105,7 +105,7 @@
             placeholder=" "
             autocomplete="new-password"
           />
-          <label for="confirmPassword" class="form-label">Confirm Password</label>
+          <label for="confirmPassword" class="form-label">{{ APP_MESSAGES.FORM_LABELS.CONFIRM_PASSWORD }}</label>
           <button
             type="button"
             class="password-toggle"
@@ -133,7 +133,7 @@
             [class.invalid]="isFieldInvalid('dob')"
             [class.focused]="dob?.value"
           />
-          <label for="dob" class="form-label">Date of Birth</label>
+          <label for="dob" class="form-label">{{ APP_MESSAGES.FORM_LABELS.DATE_OF_BIRTH }}</label>
           <div class="input-glow"></div>
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('dob')" [@slideIn]>
@@ -151,16 +151,43 @@
             [class.invalid]="isFieldInvalid('gender')"
             [class.focused]="gender?.value"
           >
-            <option value="" disabled>Select Gender</option>
+            <option value="" disabled>{{ APP_MESSAGES.UI.SELECT_GENDER }}</option>
             <option *ngFor="let option of genderOptions" [value]="option.value">
               {{ option.label }}
             </option>
           </select>
-          <label for="gender" class="form-label">Gender</label>
+          <label for="gender" class="form-label">{{ APP_MESSAGES.FORM_LABELS.GENDER }}</label>
           <div class="input-glow"></div>
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('gender')" [@slideIn]>
           {{ getErrorMessage('gender') }}
+        </div>
+      </div>
+
+      <!-- Profile Picture Field -->
+      <div class="form-group">
+        <div class="file-upload-wrapper">
+          <input
+            type="file"
+            id="profilePicture"
+            accept="image/jpeg,image/jpg,image/png"
+            (change)="onFileSelected($event)"
+            class="file-input"
+            [class.invalid]="profilePictureError"
+          />
+          <label for="profilePicture" class="file-label">
+            <span class="file-label-text">{{ APP_MESSAGES.UI.PROFILE_PICTURE_OPTIONAL }}</span>
+            <span class="file-label-hint">{{ APP_MESSAGES.UI.PROFILE_PICTURE_HINT }}</span>
+          </label>
+          <div class="file-preview" *ngIf="profilePicturePreview">
+            <img [src]="profilePicturePreview" alt="Profile preview" class="preview-image" />
+            <button type="button" class="remove-image" (click)="removeProfilePicture()" tabindex="-1">
+              ×
+            </button>
+          </div>
+        </div>
+        <div class="error-message" *ngIf="profilePictureError" [@slideIn]>
+          {{ profilePictureError }}
         </div>
       </div>
 
@@ -171,16 +198,16 @@
         [class.loading]="isSubmitting"
         [disabled]="isSubmitting"
       >
-        <span *ngIf="!isSubmitting" class="button-text">Submit Membership Application</span>
+        <span *ngIf="!isSubmitting" class="button-text">{{ APP_MESSAGES.UI.SUBMIT_MEMBERSHIP }}</span>
         <span *ngIf="isSubmitting" class="button-loading">
           <span class="spinner"></span>
-          Submitting...
+          {{ APP_MESSAGES.UI.SUBMITTING }}
         </span>
       </button>
 
       <!-- Success Message -->
       <div class="success-message" *ngIf="showSuccessMessage" [@slideIn]>
-        ✓ Your membership request has been submitted. Awaiting admin approval.
+        ✓ {{ APP_MESSAGES.SUCCESS.REGISTRATION_SUBMITTED }}
       </div>
 
       <!-- Error Message -->

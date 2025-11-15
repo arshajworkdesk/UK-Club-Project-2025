@@ -1,5 +1,8 @@
 @import '../../../styles.scss';
 
+/* Background image path relative to this component */
+$bg-image-path-relative: '../../../assets/images/membershipPage.jpg';
+
 .registration-container {
   min-height: 100vh;
   display: flex;
@@ -43,7 +46,7 @@
   max-width: 480px;
   background-image: 
     linear-gradient(135deg, var(--bg-card) 0%, var(--bg-overlay) 100%),
-    url('../../../assets/images/360_F_754628289_eVx0GTTe4et0yuPLt4J9ZKv5Ixar49eX.jpg');
+    url($bg-image-path-relative);
   background-size: cover, cover;
   background-position: center center, center center;
   background-repeat: no-repeat, no-repeat;
@@ -288,6 +291,119 @@
   }
 }
 
+.file-upload-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.file-input {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+
+  &:focus + .file-label {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), var(--glow-primary);
+  }
+
+  &.invalid + .file-label {
+    border-color: var(--error);
+    animation: shake var(--duration-slow) var(--ease-in-out);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  }
+}
+
+.file-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background: var(--surface-base);
+  border: 2px dashed var(--border-medium);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  text-align: center;
+  min-height: 120px;
+
+  &:hover {
+    border-color: var(--border-focus);
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+  }
+}
+
+.file-label-text {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.file-label-hint {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.file-preview {
+  position: relative;
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.preview-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--border-medium);
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-normal) var(--ease-in-out);
+
+  &:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+    transform: scale(1.05);
+  }
+}
+
+.remove-image {
+  position: absolute;
+  top: -8px;
+  right: calc(50% - 60px);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--error);
+  color: var(--text-white);
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-normal) var(--ease-in-out);
+  z-index: 2;
+
+  &:hover {
+    background: var(--error);
+    transform: scale(1.1);
+    box-shadow: var(--shadow-lg);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
 .submit-button {
   width: 100%;
   padding: 14px 24px;
@@ -392,7 +508,9 @@
 // Responsive Design - Mobile First
 @media (max-width: 767px) {
   .registration-container {
-    padding: 16px;
+    padding: 90px 16px 40px; // Add top padding to account for fixed navbar (70px + 20px spacing)
+    min-height: calc(100vh - 70px); // Account for navbar height
+    align-items: flex-start; // Start from top on mobile instead of centering
   }
 
   .glass-card {

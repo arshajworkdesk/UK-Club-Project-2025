@@ -1,10 +1,10 @@
 <div class="admin-dashboard-container" [@fadeIn]>
   <div class="dashboard-header">
     <div class="header-content">
-      <h1 class="page-title">Admin Dashboard</h1>
-      <p class="page-subtitle">Manage members and admin assignments</p>
+      <h1 class="page-title">{{ APP_MESSAGES.UI.ADMIN_DASHBOARD_TITLE }}</h1>
+      <p class="page-subtitle">{{ APP_MESSAGES.UI.ADMIN_DASHBOARD_SUBTITLE }}</p>
     </div>
-    <button class="logout-button" (click)="logout()">Logout</button>
+    <button class="logout-button" (click)="logout()">{{ APP_MESSAGES.UI.LOGOUT }}</button>
   </div>
 
   <!-- Success/Error Messages -->
@@ -24,7 +24,7 @@
       [class.active]="activeTab === 'pending'"
       (click)="switchTab('pending')"
     >
-      Pending Members
+      {{ APP_MESSAGES.UI.PENDING_MEMBERS }}
       <span class="badge" *ngIf="pendingMembers.length > 0">{{ pendingMembers.length }}</span>
     </button>
     <button 
@@ -32,14 +32,14 @@
       [class.active]="activeTab === 'approved'"
       (click)="switchTab('approved')"
     >
-      Approved Members
+      {{ APP_MESSAGES.UI.APPROVED_MEMBERS }}
     </button>
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'admins'"
       (click)="switchTab('admins')"
     >
-      Admins
+      {{ APP_MESSAGES.UI.ADMINS }}
     </button>
   </div>
 

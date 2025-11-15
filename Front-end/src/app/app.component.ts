@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ThemeService } from './services/theme.service';
 import { RouterOutlet } from '@angular/router';
 import { fadeIn } from './animations/route.animations';
+import { APP_CONSTANTS } from './constants/app.constants';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,7 @@ import { fadeIn } from './animations/route.animations';
   animations: [fadeIn]
 })
 export class AppComponent implements OnInit {
-  title = 'UK Sports Club';
+  title = APP_CONSTANTS.BRAND_NAME;
 
   constructor(private themeService: ThemeService) {}
 

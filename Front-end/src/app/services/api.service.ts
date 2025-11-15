@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
+import { APP_CONSTANTS } from '../constants/app.constants';
+import { APP_MESSAGES } from '../constants/app.messages';
 
 export interface RegistrationData {
   fullName: string;
@@ -21,6 +23,7 @@ export interface MembershipData {
   password: string;
   dob: string;
   gender: string;
+  profilePicture?: File | string;
 }
 
 export interface LoginData {
@@ -34,6 +37,7 @@ export interface Member {
   email: string;
   dob?: string;
   gender?: string;
+  profilePicture?: string;
   approvalStatus: 'Pending' | 'Approved' | 'Rejected';
   role?: 'member' | 'admin';
   status?: string;
@@ -72,22 +76,22 @@ export interface ActionResponse {
   providedIn: 'root'
 })
 export class ApiService {
-  private apiUrl = 'http://localhost:8080/api'; // Update with your Spring Boot backend URL
+  private apiUrl = APP_CONSTANTS.API.BASE_URL;
 
   constructor(private http: HttpClient) { }
 
   /**
    * Register a new membership (placeholder)
-   * @param membershipData Membership registration data
+   * @param formData FormData containing membership registration data and optional profile picture
    * @returns Observable with registration response
    */
-  registerMembership(membershipData: MembershipData): Observable<RegistrationResponse> {
+  registerMembership(formData: FormData): Observable<RegistrationResponse> {
     // Placeholder implementation
     // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.post<RegistrationResponse>(`${this.apiUrl}/membership/register`, membershipData);
+    // return this.http.post<RegistrationResponse>(`${this.apiUrl}/membership/register`, formData);
     
     // For testing without backend:
-    return of({ success: true, message: 'Membership request submitted successfully' }).pipe(delay(1000));
+    return of({ success: true, message: APP_MESSAGES.SUCCESS.MEMBERSHIP_REQUEST_SUBMITTED }).pipe(delay(1000));
   }
 
   /**
@@ -166,7 +170,7 @@ export class ApiService {
     // return this.http.post<ActionResponse>(`${this.apiUrl}/admin/approve-member/${memberId}`, {});
     
     // For testing without backend:
-    return of({ success: true, message: 'Member approved successfully' }).pipe(delay(500));
+    return of({ success: true, message: APP_MESSAGES.SUCCESS.MEMBER_APPROVED }).pipe(delay(500));
   }
 
   /**
@@ -180,7 +184,7 @@ export class ApiService {
     // return this.http.post<ActionResponse>(`${this.apiUrl}/admin/reject-member/${memberId}`, {});
     
     // For testing without backend:
-    return of({ success: true, message: 'Member rejected' }).pipe(delay(500));
+    return of({ success: true, message: APP_MESSAGES.SUCCESS.MEMBER_REJECTED }).pipe(delay(500));
   }
 
   /**
@@ -194,7 +198,7 @@ export class ApiService {
     // return this.http.post<ActionResponse>(`${this.apiUrl}/admin/assign-admin/${memberId}`, {});
     
     // For testing without backend:
-    return of({ success: true, message: 'Admin role assigned successfully' }).pipe(delay(500));
+    return of({ success: true, message: APP_MESSAGES.SUCCESS.ADMIN_ASSIGNED }).pipe(delay(500));
   }
 
   /**

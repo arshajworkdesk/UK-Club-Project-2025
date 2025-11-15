@@ -2,7 +2,7 @@
   <div class="nav-container">
     <div class="nav-brand">
       <a routerLink="/" class="brand-link">
-        <span class="brand-text">UK Sports Club</span>
+        <span class="brand-text">{{ APP_CONSTANTS.BRAND_NAME }}</span>
       </a>
     </div>
     
@@ -14,25 +14,25 @@
     
     <ul class="nav-menu" [class.active]="isMenuOpen">
       <li class="nav-item">
-        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()" class="nav-link">Home</a>
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_HOME }}</a>
       </li>
       <li class="nav-item">
-        <a routerLink="/membership" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Membership</a>
+        <a routerLink="/membership" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_MEMBERSHIP }}</a>
       </li>
       <li class="nav-item">
-        <a routerLink="/members" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Members</a>
+        <a routerLink="/members" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_MEMBERS }}</a>
       </li>
       <li class="nav-item">
-        <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Contact Us</a>
+        <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_CONTACT_US }}</a>
       </li>
       <li class="nav-item">
-        <a routerLink="/admin/login" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Admin Login</a>
+        <a routerLink="/admin/login" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_ADMIN_LOGIN }}</a>
       </li>
       <li class="nav-item" *ngIf="isAdmin">
-        <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMenu()" class="nav-link">Dashboard</a>
+        <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_DASHBOARD }}</a>
       </li>
       <li class="nav-item" *ngIf="isAdmin">
-        <a (click)="logout()" class="nav-link">Logout</a>
+        <a (click)="logout()" class="nav-link">{{ APP_MESSAGES.UI.LOGOUT }}</a>
       </li>
     </ul>
   </div>

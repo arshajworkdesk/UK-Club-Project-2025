@@ -14,6 +14,8 @@ import { MembersComponent } from './pages/members/members.component';
 import { ContactComponent } from './pages/contact/contact.component';
 import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
 import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard.component';
+import { ToastComponent } from './components/toast/toast.component';
+import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +26,9 @@ import { AdminDashboardComponent } from './pages/admin-dashboard/admin-dashboard
     MembersComponent,
     ContactComponent,
     AdminLoginComponent,
-    AdminDashboardComponent
+    AdminDashboardComponent,
+    ToastComponent,
+    ConfirmationDialogComponent
   ],
   imports: [
     BrowserModule,

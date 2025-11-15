@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService, Member } from '../../services/api.service';
 import { fadeIn, staggerList } from '../../animations/route.animations';
+import { APP_CONSTANTS } from '../../constants/app.constants';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-members',
@@ -14,6 +16,10 @@ export class MembersComponent implements OnInit {
   isLoading = true;
   searchTerm = '';
   sortBy: 'name' = 'name';
+
+  // Expose constants for template
+  readonly APP_CONSTANTS = APP_CONSTANTS;
+  readonly APP_MESSAGES = APP_MESSAGES;
 
   constructor(private apiService: ApiService) {}
 
@@ -43,11 +49,11 @@ export class MembersComponent implements OnInit {
 
   getMockMembers(): Member[] {
     return [
-      { id: 1, fullName: 'John Smith', email: 'john.smith@example.com', dob: '1990-05-15', gender: 'male', approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 2, fullName: 'Sarah Johnson', email: 'sarah.j@example.com', dob: '1992-08-20', gender: 'female', approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 3, fullName: 'Michael Brown', email: 'm.brown@example.com', dob: '1988-03-10', gender: 'male', approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 4, fullName: 'Emily Davis', email: 'emily.d@example.com', dob: '1995-11-05', gender: 'female', approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 5, fullName: 'David Wilson', email: 'd.wilson@example.com', dob: '1991-07-12', gender: 'male', approvalStatus: 'Approved' as const, role: 'member' as const }
+      { id: 1, fullName: 'John Smith', email: 'john.smith@example.com', dob: '1990-05-15', gender: 'male', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
+      { id: 2, fullName: 'Sarah Johnson', email: 'sarah.j@example.com', dob: '1992-08-20', gender: 'female', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
+      { id: 3, fullName: 'Michael Brown', email: 'm.brown@example.com', dob: '1988-03-10', gender: 'male', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
+      { id: 4, fullName: 'Emily Davis', email: 'emily.d@example.com', dob: '1995-11-05', gender: 'female', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
+      { id: 5, fullName: 'David Wilson', email: 'd.wilson@example.com', dob: '1991-07-12', gender: 'male', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const }
     ];
   }
 
@@ -70,10 +76,10 @@ export class MembersComponent implements OnInit {
     });
   }
 
-  formatDate(dateString?: string): string {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  onImageError(event: Event): void {
+    // Hide the image if it fails to load, fallback to initial will show
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
   }
 
   formatGender(gender?: string): string {
@@ -85,6 +91,10 @@ export class MembersComponent implements OnInit {
       'prefer-not-to-say': 'Prefer not to say'
     };
     return genderMap[gender] || gender;
+  }
+
+  getShowingMembersMessage(): string {
+    return APP_MESSAGES.UI.SHOWING_MEMBERS(this.filteredMembers.length, this.members.length);
   }
 }
 

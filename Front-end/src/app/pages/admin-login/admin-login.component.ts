@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { fadeIn } from '../../animations/route.animations';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-admin-login',
@@ -14,6 +15,9 @@ export class AdminLoginComponent implements OnInit {
   loginForm!: FormGroup;
   isSubmitting = false;
   errorMessage = '';
+
+  // Expose constants for template
+  readonly APP_MESSAGES = APP_MESSAGES;
 
   constructor(
     private fb: FormBuilder,
@@ -61,13 +65,13 @@ export class AdminLoginComponent implements OnInit {
             // Redirect to admin dashboard
             this.router.navigate(['/admin/dashboard']);
           } else {
-            this.errorMessage = response.message || 'Login failed. Please check your credentials.';
+            this.errorMessage = response.message || APP_MESSAGES.ERROR.LOGIN_FAILED;
             this.isSubmitting = false;
           }
         },
         error: (error) => {
           console.error('Login error:', error);
-          this.errorMessage = 'An error occurred during login. Please try again.';
+          this.errorMessage = APP_MESSAGES.ERROR.LOGIN_ERROR;
           this.isSubmitting = false;
         }
       });
@@ -82,16 +86,16 @@ export class AdminLoginComponent implements OnInit {
     const control = this.loginForm.get(fieldName);
     
     if (control?.hasError('required')) {
-      return `${this.getFieldLabel(fieldName)} is required`;
+      return APP_MESSAGES.VALIDATION.REQUIRED(this.getFieldLabel(fieldName));
     }
     
     if (control?.hasError('email')) {
-      return 'Please enter a valid email address';
+      return APP_MESSAGES.VALIDATION.INVALID_EMAIL;
     }
     
     if (control?.hasError('minlength')) {
       const minLength = control.errors?.['minlength']?.requiredLength;
-      return `${this.getFieldLabel(fieldName)} must be at least ${minLength} characters`;
+      return APP_MESSAGES.VALIDATION.MIN_LENGTH(this.getFieldLabel(fieldName), minLength);
     }
     
     return '';
@@ -99,8 +103,8 @@ export class AdminLoginComponent implements OnInit {
 
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      email: 'Email',
-      password: 'Password'
+      email: APP_MESSAGES.FORM_LABELS.EMAIL,
+      password: APP_MESSAGES.FORM_LABELS.PASSWORD
     };
     return labels[fieldName] || fieldName;
   }

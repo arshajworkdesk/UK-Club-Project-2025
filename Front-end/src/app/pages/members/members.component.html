@@ -1,7 +1,7 @@
 <div class="members-container">
   <div class="members-header">
-    <h1 class="page-title">Our Members</h1>
-    <p class="page-subtitle">Meet the amazing members of UK Sports Club</p>
+    <h1 class="page-title">{{ APP_MESSAGES.UI.MEMBERS_TITLE }}</h1>
+    <p class="page-subtitle">{{ APP_MESSAGES.UI.MEMBERS_SUBTITLE }}</p>
   </div>
 
   <div class="members-controls">
@@ -10,7 +10,7 @@
         type="text"
         [(ngModel)]="searchTerm"
         (input)="onSearchChange()"
-        placeholder="Search members by name or email..."
+        [placeholder]="APP_MESSAGES.UI.SEARCH_MEMBERS"
         class="search-input"
       />
       <span class="search-icon">🔍</span>
@@ -27,23 +27,31 @@
   <div class="members-content">
     <div *ngIf="isLoading" class="loading-state">
       <div class="spinner"></div>
-      <p>Loading members...</p>
+      <p>{{ APP_MESSAGES.UI.LOADING_MEMBERS }}</p>
     </div>
 
     <div *ngIf="!isLoading && filteredMembers.length === 0" class="empty-state">
-      <p>No members found matching your search.</p>
+      <p>{{ APP_MESSAGES.UI.NO_MEMBERS_FOUND }}</p>
     </div>
 
     <div *ngIf="!isLoading && filteredMembers.length > 0" class="members-grid" [@staggerList]>
       <div class="member-card" *ngFor="let member of filteredMembers" [@fadeIn]>
         <div class="member-avatar">
-          {{ member.fullName.charAt(0) }}
+          <img 
+            *ngIf="member.profilePicture" 
+            [src]="member.profilePicture" 
+            [alt]="member.fullName + ' profile picture'"
+            class="member-profile-image"
+            (error)="onImageError($event)"
+          />
+          <span *ngIf="!member.profilePicture" class="member-initial">
+            {{ member.fullName.charAt(0) }}
+          </span>
         </div>
         <div class="member-info">
           <h3 class="member-name">{{ member.fullName }}</h3>
           <p class="member-email">{{ member.email }}</p>
-          <div class="member-meta">
-            <span>DOB: {{ formatDate(member.dob) }}</span>
+          <div class="member-meta" *ngIf="member.gender">
             <span>Gender: {{ formatGender(member.gender) }}</span>
           </div>
         </div>
@@ -52,7 +60,7 @@
   </div>
 
   <div *ngIf="!isLoading && filteredMembers.length > 0" class="members-stats">
-    <p>Showing <strong>{{ filteredMembers.length }}</strong> of <strong>{{ members.length }}</strong> members</p>
+    <p>{{ getShowingMembersMessage() }}</p>
   </div>
 </div>
 

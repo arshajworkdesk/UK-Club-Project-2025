@@ -3,13 +3,13 @@
   <section class="hero-section">
     <div class="hero-content">
       <h1 class="hero-title">
-        Welcome to <span class="highlight">UK Sports Club</span>
+        Welcome to <span class="highlight">{{ APP_CONSTANTS.BRAND_NAME }}</span>
       </h1>
       <p class="hero-subtitle">
         Your premier destination for exclusive networking, events, and community engagement
       </p>
       <div class="hero-actions">
-        <a routerLink="/membership" class="btn btn-primary">Apply for Membership</a>
+        <a routerLink="/membership" class="btn btn-primary">{{ APP_MESSAGES.UI.APPLY_FOR_MEMBERSHIP }}</a>
         <a routerLink="/members" class="btn btn-secondary">View Members</a>
       </div>
     </div>
@@ -28,11 +28,11 @@
   <!-- About Section -->
   <section class="about-section">
     <div class="section-container">
-      <h2 class="section-title">About UK Sports Club</h2>
+      <h2 class="section-title">About {{ APP_CONSTANTS.BRAND_NAME }}</h2>
       <div class="about-content">
         <div class="about-text">
           <p>
-            UK Sports Club is a prestigious community organization dedicated to bringing together 
+            {{ APP_CONSTANTS.BRAND_NAME }} is a prestigious community organization dedicated to bringing together 
             like-minded individuals from across the United Kingdom. Since our establishment, 
             we have been committed to fostering connections, organizing exclusive events, and 
             providing our members with unparalleled opportunities for growth and networking.
@@ -41,7 +41,7 @@
             Our mission is to create a vibrant ecosystem where members can thrive, share 
             experiences, and build lasting relationships. Whether you're looking to expand your 
             professional network, participate in exciting events, or simply be part of an 
-            exclusive community, UK Sports Club is the place for you.
+            exclusive community, {{ APP_CONSTANTS.BRAND_NAME }} is the place for you.
           </p>
         </div>
         <div class="about-image">
@@ -56,7 +56,7 @@
   <!-- Features Section -->
   <section class="features-section">
     <div class="section-container">
-      <h2 class="section-title">Why Join UK Sports Club?</h2>
+      <h2 class="section-title">Why Join {{ APP_CONSTANTS.BRAND_NAME }}?</h2>
       <div class="features-grid">
         <div class="feature-card" *ngFor="let feature of features">
           <div class="feature-icon">{{ feature.icon }}</div>
@@ -72,7 +72,7 @@
     <div class="cta-content">
       <h2 class="cta-title">Ready to Join Our Community?</h2>
       <p class="cta-text">Apply for membership and become part of something special</p>
-      <a routerLink="/membership" class="btn btn-primary btn-large">Apply for Membership</a>
+      <a routerLink="/membership" class="btn btn-primary btn-large">{{ APP_MESSAGES.UI.APPLY_FOR_MEMBERSHIP }}</a>
     </div>
   </section>
 </div>

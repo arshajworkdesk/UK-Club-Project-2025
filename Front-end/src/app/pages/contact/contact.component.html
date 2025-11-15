@@ -1,7 +1,7 @@
 <div class="contact-container">
   <div class="contact-header">
-    <h1 class="page-title">Contact Us</h1>
-    <p class="page-subtitle">Get in touch with UK Sports Club - We'd love to hear from you!</p>
+    <h1 class="page-title">{{ APP_MESSAGES.UI.CONTACT_TITLE }}</h1>
+    <p class="page-subtitle">{{ APP_MESSAGES.UI.CONTACT_SUBTITLE }}</p>
   </div>
 
   <div class="contact-content">
@@ -33,18 +33,18 @@
 
     <div class="contact-form-section">
       <div class="form-card">
-        <h2 class="form-title">Send us a Message</h2>
+        <h2 class="form-title">{{ APP_MESSAGES.UI.CONTACT_FORM_TITLE }}</h2>
         
         <form [formGroup]="contactForm" (ngSubmit)="onSubmit()" class="contact-form">
           <div class="form-group">
-            <label for="name" class="form-label">Your Name</label>
+            <label for="name" class="form-label">{{ APP_MESSAGES.FORM_LABELS.YOUR_NAME }}</label>
             <input
               type="text"
               id="name"
               formControlName="name"
               class="form-input"
               [class.invalid]="isFieldInvalid('name')"
-              placeholder="Enter your full name"
+              [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_FULL_NAME"
             />
             <div class="error-message" *ngIf="isFieldInvalid('name')">
               {{ getErrorMessage('name') }}
@@ -52,14 +52,14 @@
           </div>
 
           <div class="form-group">
-            <label for="email" class="form-label">Your Email</label>
+            <label for="email" class="form-label">{{ APP_MESSAGES.FORM_LABELS.YOUR_EMAIL }}</label>
             <input
               type="email"
               id="email"
               formControlName="email"
               class="form-input"
               [class.invalid]="isFieldInvalid('email')"
-              placeholder="Enter your email address"
+              [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_EMAIL"
             />
             <div class="error-message" *ngIf="isFieldInvalid('email')">
               {{ getErrorMessage('email') }}
@@ -67,14 +67,14 @@
           </div>
 
           <div class="form-group">
-            <label for="subject" class="form-label">Subject</label>
+            <label for="subject" class="form-label">{{ APP_MESSAGES.FORM_LABELS.SUBJECT }}</label>
             <input
               type="text"
               id="subject"
               formControlName="subject"
               class="form-input"
               [class.invalid]="isFieldInvalid('subject')"
-              placeholder="What is this regarding?"
+              [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_SUBJECT"
             />
             <div class="error-message" *ngIf="isFieldInvalid('subject')">
               {{ getErrorMessage('subject') }}
@@ -82,14 +82,14 @@
           </div>
 
           <div class="form-group">
-            <label for="message" class="form-label">Message</label>
+            <label for="message" class="form-label">{{ APP_MESSAGES.FORM_LABELS.MESSAGE }}</label>
             <textarea
               id="message"
               formControlName="message"
               class="form-textarea"
               [class.invalid]="isFieldInvalid('message')"
               rows="6"
-              placeholder="Tell us how we can help you..."
+              [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_MESSAGE"
             ></textarea>
             <div class="error-message" *ngIf="isFieldInvalid('message')">
               {{ getErrorMessage('message') }}
@@ -103,20 +103,20 @@
               [class.loading]="isSubmitting"
               [disabled]="isSubmitting"
             >
-              <span *ngIf="!isSubmitting">Send Message</span>
+              <span *ngIf="!isSubmitting">{{ APP_MESSAGES.UI.SEND_MESSAGE }}</span>
               <span *ngIf="isSubmitting" class="button-loading">
                 <span class="spinner"></span>
-                Sending...
+                {{ APP_MESSAGES.UI.SENDING }}
               </span>
             </button>
           </div>
 
           <div class="form-messages">
             <div class="success-message" *ngIf="submitSuccess">
-              ✓ Message sent successfully! We'll get back to you soon.
+              ✓ {{ APP_MESSAGES.SUCCESS.CONTACT_MESSAGE_SENT }}
             </div>
             <div class="error-message" *ngIf="submitError">
-              ✗ Failed to send message. Please try again later.
+              ✗ {{ APP_MESSAGES.ERROR.CONTACT_MESSAGE_FAILED }}
             </div>
           </div>
         </form>

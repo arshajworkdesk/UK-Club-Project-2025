@@ -1,0 +1,44 @@
+<div 
+  *ngIf="dialogData" 
+  class="dialog-overlay" 
+  [@fadeIn]
+  (click)="onBackdropClick($event)"
+>
+  <div class="dialog-container" [@popIn] [ngClass]="'container-' + (dialogData.type || 'warning')">
+    <div class="dialog-header" [ngClass]="'header-' + (dialogData.type || 'warning')">
+      <div class="dialog-icon-wrapper">
+        <div class="dialog-icon" [ngClass]="'icon-' + (dialogData.type || 'warning')">
+          <span *ngIf="dialogData.type === 'danger'" class="icon-symbol">✗</span>
+          <span *ngIf="dialogData.type === 'warning'" class="icon-symbol">⚠</span>
+          <span *ngIf="!dialogData.type || dialogData.type === 'info'" class="icon-symbol">✓</span>
+        </div>
+      </div>
+      <div class="dialog-title-wrapper">
+        <h3 class="dialog-title">{{ dialogData.title }}</h3>
+      </div>
+    </div>
+    
+    <div class="dialog-body">
+      <p class="dialog-message">{{ dialogData.message }}</p>
+    </div>
+    
+    <div class="dialog-actions">
+      <button 
+        class="btn-cancel" 
+        (click)="cancel()"
+        type="button"
+      >
+        {{ dialogData.cancelText || APP_MESSAGES.CONFIRMATION.BUTTON_CANCEL }}
+      </button>
+      <button 
+        class="btn-confirm" 
+        [ngClass]="'btn-' + (dialogData.type || 'warning')"
+        (click)="confirm()"
+        type="button"
+      >
+        {{ dialogData.confirmText || APP_MESSAGES.CONFIRMATION.BUTTON_CONFIRM }}
+      </button>
+    </div>
+  </div>
+</div>
+

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { trigger, state, style, transition, animate, query, stagger } from '@angular/animations';
 import { ApiService } from '../../services/api.service';
+import { APP_CONSTANTS } from '../../constants/app.constants';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-registration',
@@ -64,6 +66,12 @@ export class RegistrationComponent implements OnInit {
   showSuccessMessage = false;
   errorMessage = '';
   particles: Array<{x: number, y: number, delay: number}> = [];
+  selectedFile: File | null = null;
+  profilePicturePreview: string | null = null;
+  profilePictureError: string = '';
+  
+  // Expose constants for template
+  readonly APP_MESSAGES = APP_MESSAGES;
   
   genderOptions = [
     { value: 'male', label: 'Male' },
@@ -149,17 +157,69 @@ export class RegistrationComponent implements OnInit {
     this.showConfirmPassword = !this.showConfirmPassword;
   }
 
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    
+    if (!file) {
+      return;
+    }
+
+    // Reset error
+    this.profilePictureError = '';
+
+    // Validate file type
+    if (!(APP_CONSTANTS.FILE_UPLOAD.ALLOWED_TYPES as readonly string[]).includes(file.type)) {
+      this.profilePictureError = APP_MESSAGES.FILE_UPLOAD.INVALID_TYPE;
+      input.value = '';
+      return;
+    }
+
+    // Validate file size
+    if (file.size > APP_CONSTANTS.FILE_UPLOAD.MAX_SIZE) {
+      this.profilePictureError = APP_MESSAGES.FILE_UPLOAD.FILE_TOO_LARGE;
+      input.value = '';
+      return;
+    }
+
+    // Store the file
+    this.selectedFile = file;
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      this.profilePicturePreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeProfilePicture(): void {
+    this.selectedFile = null;
+    this.profilePicturePreview = null;
+    this.profilePictureError = '';
+    // Reset file input
+    const fileInput = document.getElementById('profilePicture') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
   onSubmit(): void {
-    if (this.registrationForm.valid && !this.isSubmitting) {
+    if (this.registrationForm.valid && !this.isSubmitting && !this.profilePictureError) {
       this.isSubmitting = true;
       
-      const formData = {
-        fullName: this.registrationForm.value.fullName,
-        email: this.registrationForm.value.email,
-        password: this.registrationForm.value.password,
-        dob: this.registrationForm.value.dob,
-        gender: this.registrationForm.value.gender
-      };
+      // Create FormData for multipart/form-data upload
+      const formData = new FormData();
+      formData.append('fullName', this.registrationForm.value.fullName);
+      formData.append('email', this.registrationForm.value.email);
+      formData.append('password', this.registrationForm.value.password);
+      formData.append('dob', this.registrationForm.value.dob);
+      formData.append('gender', this.registrationForm.value.gender);
+      
+      // Append profile picture if selected
+      if (this.selectedFile) {
+        formData.append('profilePicture', this.selectedFile, this.selectedFile.name);
+      }
 
       // Placeholder for API call
       this.apiService.registerMembership(formData).subscribe({
@@ -168,6 +228,7 @@ export class RegistrationComponent implements OnInit {
           this.isSubmitting = false;
           this.showSuccessMessage = true;
           this.registrationForm.reset();
+          this.removeProfilePicture();
           // Hide success message after 5 seconds
           setTimeout(() => {
             this.showSuccessMessage = false;
@@ -176,7 +237,7 @@ export class RegistrationComponent implements OnInit {
         error: (error) => {
           console.error('Membership registration failed:', error);
           this.isSubmitting = false;
-          this.errorMessage = 'Failed to submit membership request. Please try again.';
+          this.errorMessage = APP_MESSAGES.ERROR.REGISTRATION_FAILED;
           setTimeout(() => {
             this.errorMessage = '';
           }, 5000);
@@ -194,23 +255,20 @@ export class RegistrationComponent implements OnInit {
     const control = this.registrationForm.get(fieldName);
     
     if (control?.hasError('required')) {
-      return `${this.getFieldLabel(fieldName)} is required`;
+      return APP_MESSAGES.VALIDATION.REQUIRED(this.getFieldLabel(fieldName));
     }
     
     if (control?.hasError('email')) {
-      return 'Please enter a valid email address';
+      return APP_MESSAGES.VALIDATION.INVALID_EMAIL;
     }
     
     if (control?.hasError('minlength')) {
       const minLength = control.errors?.['minlength']?.requiredLength;
-      if (fieldName === 'password') {
-        return `Password must be at least ${minLength} characters`;
-      }
-      return `${this.getFieldLabel(fieldName)} must be at least ${minLength} characters`;
+      return APP_MESSAGES.VALIDATION.MIN_LENGTH(this.getFieldLabel(fieldName), minLength);
     }
     
     if (this.registrationForm.hasError('passwordMismatch') && fieldName === 'confirmPassword') {
-      return 'Passwords do not match';
+      return APP_MESSAGES.VALIDATION.PASSWORD_MISMATCH;
     }
     
     return '';
@@ -218,12 +276,12 @@ export class RegistrationComponent implements OnInit {
 
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      fullName: 'Full Name',
-      email: 'Email',
-      password: 'Password',
-      confirmPassword: 'Confirm Password',
-      dob: 'Date of Birth',
-      gender: 'Gender'
+      fullName: APP_MESSAGES.FORM_LABELS.FULL_NAME,
+      email: APP_MESSAGES.FORM_LABELS.EMAIL,
+      password: APP_MESSAGES.FORM_LABELS.PASSWORD,
+      confirmPassword: APP_MESSAGES.FORM_LABELS.CONFIRM_PASSWORD,
+      dob: APP_MESSAGES.FORM_LABELS.DATE_OF_BIRTH,
+      gender: APP_MESSAGES.FORM_LABELS.GENDER
     };
     return labels[fieldName] || fieldName;
   }

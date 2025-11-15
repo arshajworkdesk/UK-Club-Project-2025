@@ -1,6 +1,8 @@
 import { Component, HostListener, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { APP_CONSTANTS } from '../../constants/app.constants';
+import { APP_MESSAGES } from '../../constants/app.messages';
 
 @Component({
   selector: 'app-navigation',
@@ -11,6 +13,10 @@ export class NavigationComponent implements OnInit {
   isMenuOpen = false;
   isScrolled = false;
   isAdmin = false;
+
+  // Expose constants for template
+  readonly APP_CONSTANTS = APP_CONSTANTS;
+  readonly APP_MESSAGES = APP_MESSAGES;
 
   constructor(
     private authService: AuthService,
