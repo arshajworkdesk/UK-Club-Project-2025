@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { BehaviorSubject, Observable, map, catchError, of } from 'rxjs';
+import { ApiService, LoginResponse } from './api.service';
 
 export interface AdminUser {
   id: number;
@@ -14,61 +14,70 @@ export interface AdminUser {
 })
 export class AuthService {
   private readonly STORAGE_KEY = 'uk_club_admin';
+  private readonly TOKEN_KEY = 'uk_club_token';
   private readonly ADMIN_KEY = 'uk_club_is_admin';
   
   private currentAdminSubject = new BehaviorSubject<AdminUser | null>(this.getStoredAdmin());
   public currentAdmin$ = this.currentAdminSubject.asObservable();
 
-  constructor() {
-    // TESTING MODE: Don't auto-login so user can test login form
-    // TODO: Restore auto-login or session check in production
-    // const testAdmin: AdminUser = { id: 1, email: 'admin@ukclub.com', fullName: 'Test Admin', role: 'admin' };
-    // this.setStoredAdmin(testAdmin);
-    // this.currentAdminSubject.next(testAdmin);
-    
+  constructor(private apiService: ApiService) {
     // Check if admin session exists on service initialization
     this.checkStoredSession();
   }
 
   /**
-   * Login as admin (placeholder - will be replaced with actual API call)
-   * TESTING MODE: Always succeeds
-   * TODO: Restore actual authentication in production
+   * Login as admin - calls backend API
    * @param email Admin email
    * @param password Admin password
    * @returns Observable with login response
    */
-  login(email: string, password: string): Observable<{ success: boolean; message: string; admin?: AdminUser }> {
-    // TESTING MODE: Always succeed
-    const testAdmin: AdminUser = { id: 1, email: email || 'admin@ukclub.com', fullName: 'Test Admin', role: 'admin' };
-    this.setStoredAdmin(testAdmin);
-    this.currentAdminSubject.next(testAdmin);
-    
-    return of({ 
-      success: true, 
-      message: 'Login successful (Testing Mode)',
-      admin: testAdmin
-    }).pipe(delay(500));
-    
-    // Production code (commented for testing):
-    // const mockAdmins = [
-    //   { id: 1, email: 'admin@ukclub.com', fullName: 'Admin User', role: 'admin' as const }
-    // ];
-    // const admin = mockAdmins.find(a => a.email === email);
-    // if (admin) {
-    //   this.setStoredAdmin(admin);
-    //   this.currentAdminSubject.next(admin);
-    //   return of({ 
-    //     success: true, 
-    //     message: 'Login successful',
-    //     admin: admin
-    //   }).pipe(delay(500));
-    // } else {
-    //   return of({ 
-    //     success: false, 
-    //     message: 'Invalid credentials or user is not an admin' 
-    //   }).pipe(delay(500));
-    // }
+  login(email: string, password: string): Observable<{ success: boolean; message: string; admin?: AdminUser; token?: string }> {
+    return this.apiService.adminLogin({ email, password }).pipe(
+      map((response: LoginResponse) => {
+        if (response.success && response.admin && response.token) {
+          // Store admin info and token
+          const admin: AdminUser = {
+            id: response.admin.id,
+            email: response.admin.email,
+            fullName: response.admin.fullName,
+            role: 'admin'
+          };
+          
+          this.setStoredAdmin(admin);
+          this.setStoredToken(response.token);
+          this.currentAdminSubject.next(admin);
+          
+          return {
+            success: true,
+            message: response.message || 'Login successful',
+            admin: admin,
+            token: response.token
+          };
+        } else {
+          return {
+            success: false,
+            message: response.message || 'Login failed'
+          };
+        }
+      }),
+      catchError((error) => {
+        console.error('Login API error:', error);
+        let errorMessage = 'Login failed. Please try again.';
+        
+        if (error.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error.status === 401) {
+          errorMessage = 'Invalid credentials or user is not an admin';
+        } else if (error.status === 0) {
+          errorMessage = 'Cannot connect to server. Please check if the backend is running.';
+        }
+        
+        return of({
+          success: false,
+          message: errorMessage
+        });
+      })
+    );
   }
 
   /**
@@ -76,35 +85,32 @@ export class AuthService {
    */
   logout(): void {
     localStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.ADMIN_KEY);
     this.currentAdminSubject.next(null);
   }
 
   /**
    * Check if current user is admin
-   * TESTING MODE: Checks localStorage (allows testing login flow)
-   * TODO: Restore actual check in production
    */
   isAdmin(): boolean {
-    // TESTING MODE: Check localStorage so login page is accessible initially
-    // But login() always succeeds, so any credentials will work
     const admin = this.getStoredAdmin();
-    return admin !== null;
-    
-    // Note: AdminGuard is bypassed for testing, so this only affects UI visibility
+    const token = this.getStoredToken();
+    return admin !== null && token !== null;
   }
 
   /**
    * Get current admin user
-   * TESTING MODE: Always returns a test admin
-   * TODO: Restore actual check in production
    */
   getCurrentAdmin(): AdminUser | null {
-    // TESTING MODE: Always return test admin
-    return { id: 1, email: 'admin@ukclub.com', fullName: 'Test Admin', role: 'admin' };
-    
-    // Production code (commented for testing):
-    // return this.getStoredAdmin();
+    return this.getStoredAdmin();
+  }
+
+  /**
+   * Get stored JWT token
+   */
+  getToken(): string | null {
+    return this.getStoredToken();
   }
 
   /**
@@ -139,8 +145,35 @@ export class AuthService {
    */
   private checkStoredSession(): void {
     const admin = this.getStoredAdmin();
-    if (admin) {
+    const token = this.getStoredToken();
+    if (admin && token) {
       this.currentAdminSubject.next(admin);
+    } else {
+      // Clear invalid session
+      this.logout();
+    }
+  }
+
+  /**
+   * Get stored token from localStorage
+   */
+  private getStoredToken(): string | null {
+    try {
+      return localStorage.getItem(this.TOKEN_KEY);
+    } catch (error) {
+      console.error('Error reading token from storage:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Store token in localStorage
+   */
+  private setStoredToken(token: string): void {
+    try {
+      localStorage.setItem(this.TOKEN_KEY, token);
+    } catch (error) {
+      console.error('Error storing token:', error);
     }
   }
 }
