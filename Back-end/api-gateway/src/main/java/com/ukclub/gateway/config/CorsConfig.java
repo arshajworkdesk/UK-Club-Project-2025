@@ -1,12 +1,11 @@
 package com.ukclub.gateway.config;
 
+import com.ukclub.gateway.constants.GatewayConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 /**
  * CORS Configuration
@@ -20,39 +19,22 @@ public class CorsConfig {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
         // Allowed origins
-        corsConfig.setAllowedOrigins(Arrays.asList(
-                "http://localhost:4200",  // Angular dev server
-                "https://arshajworkdesk.github.io"  // GitHub Pages production
-        ));
+        corsConfig.setAllowedOrigins(GatewayConstants.CORS_ALLOWED_ORIGINS);
         
         // Allowed HTTP methods
-        corsConfig.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
-        ));
+        corsConfig.setAllowedMethods(GatewayConstants.CORS_ALLOWED_METHODS);
         
         // Allowed headers
-        corsConfig.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "X-User-Id",
-                "X-User-Email",
-                "X-User-Role"
-        ));
+        corsConfig.setAllowedHeaders(GatewayConstants.CORS_ALLOWED_HEADERS);
         
         // Allow credentials (cookies, authorization headers)
         corsConfig.setAllowCredentials(true);
         
         // Cache preflight response for 1 hour
-        corsConfig.setMaxAge(3600L);
+        corsConfig.setMaxAge(GatewayConstants.CORS_MAX_AGE);
         
         // Exposed headers
-        corsConfig.setExposedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type"
-        ));
+        corsConfig.setExposedHeaders(GatewayConstants.CORS_EXPOSED_HEADERS);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfig);

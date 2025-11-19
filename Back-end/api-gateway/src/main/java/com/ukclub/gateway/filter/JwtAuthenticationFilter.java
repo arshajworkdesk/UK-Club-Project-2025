@@ -23,6 +23,9 @@ import java.nio.charset.StandardCharsets;
  * JWT Authentication Filter
  * Validates JWT tokens for protected endpoints
  * Skips validation for public endpoints
+ * 
+ * Like a bouncer at a club: checks your ID (JWT) at the door, and if valid, gives you a wristband (headers) 
+ * so you don’t need to show ID again inside.
  */
 @Slf4j
 @Component
