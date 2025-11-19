@@ -64,12 +64,20 @@ export class AuthService {
         console.error('Login API error:', error);
         let errorMessage = 'Login failed. Please try again.';
         
-        if (error.error?.message) {
+        // Check for connection errors (service down, network issues)
+        const errorMessageStr = error?.message?.toLowerCase() || '';
+        const isConnectionError = error.status === 0 || 
+                                  errorMessageStr.includes('connection refused') ||
+                                  errorMessageStr.includes('failed to fetch') ||
+                                  errorMessageStr.includes('network error') ||
+                                  errorMessageStr.includes('connection');
+        
+        if (isConnectionError) {
+          errorMessage = 'Cannot connect to server. Please contact Admin';
+        } else if (error.error?.message) {
           errorMessage = error.error.message;
         } else if (error.status === 401) {
           errorMessage = 'Invalid credentials or user is not an admin';
-        } else if (error.status === 0) {
-          errorMessage = 'Cannot connect to server. Please check if the backend is running.';
         }
         
         return of({
