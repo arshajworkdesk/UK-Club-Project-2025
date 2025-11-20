@@ -100,12 +100,10 @@ export class ApiService {
    * @returns Observable with login response
    */
   adminLogin(loginData: LoginData): Observable<LoginResponse> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
+ 
     return this.http.post<LoginResponse>(`${this.apiUrl}/admin/login`, loginData);
     
-    // For testing without backend, uncomment below:
-    // return of({ success: true, message: 'Login successful' }).pipe(delay(500));
+
   }
 
   /**
