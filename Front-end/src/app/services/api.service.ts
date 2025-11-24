@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { Observable, Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { APP_MESSAGES } from '../constants/app.messages';
 
 export interface RegistrationData {
   fullName: string;
@@ -35,20 +33,46 @@ export interface Member {
   id: number;
   fullName: string;
   email: string;
-  dob?: string;
+  dateOfBirth?: string; // Backend returns dateOfBirth (LocalDate as string)
   gender?: string;
-  profilePicture?: string;
+  profilePictureUrl?: string; // Backend returns profilePictureUrl
   approvalStatus: 'Pending' | 'Approved' | 'Rejected';
-  role?: 'member' | 'admin';
-  status?: string;
+  role?: 'member' | 'manager' | 'admin';
+  createdAt?: string;
+  updatedAt?: string;
+  // Legacy fields for backward compatibility
+  dob?: string; // Alias for dateOfBirth
+  profilePicture?: string; // Alias for profilePictureUrl
 }
 
 export interface ContactMessage {
   name: string;
   email: string;
+  phone: string;
   subject: string;
   message: string;
 }
+
+export interface ContactMessageResponse {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface ContactMessagePageResponse {
+  content: ContactMessageResponse[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
 
 export interface ContactResponse {
   success: boolean;
@@ -72,38 +96,105 @@ export interface ActionResponse {
   message: string;
 }
 
+export interface ClubDetails {
+  id: number;
+  clubName: string;
+  establishedYear: number;
+  description: string;
+  email: string;
+  phone: string;
+  address: string;
+  businessHours: string;
+  clubImage?: string;
+  clubLogo?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ClubDetailsRequest {
+  clubName: string;
+  establishedYear: number;
+  description: string;
+  email: string;
+  phone: string;
+  address: string;
+  businessHours: string;
+  clubImage?: string;
+  clubLogo?: string;
+}
+
+export interface AuditLog {
+  id: number;
+  timestamp: string;
+  userName: string;
+  userEmail: string;
+  actionType: string;
+  description: string;
+  entityType: string;
+  entityId?: number;
+}
+
+export interface AuditLogPageResponse {
+  content: AuditLog[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  first: boolean;
+  last: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private apiUrl = environment.apiUrl;
+  
+  // Subject to notify when club details are updated
+  private clubDetailsUpdated$ = new Subject<ClubDetails>();
+  
+  // Observable for components to subscribe to club details updates
+  get clubDetailsUpdated(): Observable<ClubDetails> {
+    return this.clubDetailsUpdated$.asObservable();
+  }
 
   constructor(private http: HttpClient) { }
-
+  
   /**
-   * Register a new membership (placeholder)
-   * @param formData FormData containing membership registration data and optional profile picture
-   * @returns Observable with registration response
+   * Notify subscribers that club details have been updated
+   * @param details Updated club details
    */
-  registerMembership(formData: FormData): Observable<RegistrationResponse> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.post<RegistrationResponse>(`${this.apiUrl}/membership/register`, formData);
-    
-    // For testing without backend:
-    return of({ success: true, message: APP_MESSAGES.SUCCESS.MEMBERSHIP_REQUEST_SUBMITTED }).pipe(delay(1000));
+  notifyClubDetailsUpdated(details: ClubDetails): void {
+    this.clubDetailsUpdated$.next(details);
   }
 
   /**
-   * Admin login (placeholder)
+   * Upload profile picture
+   * @param file The image file to upload
+   * @returns Observable with upload response containing filename and URL
+   */
+  uploadProfilePicture(file: File): Observable<{ success: boolean; message: string; filename?: string; url?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ success: boolean; message: string; filename?: string; url?: string }>(`${this.apiUrl}/upload/profile-picture`, formData);
+  }
+
+  /**
+   * Register a new membership
+   * @param registrationData Registration data
+   * @returns Observable with registration response
+   */
+  registerMembership(registrationData: MembershipData): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(`${this.apiUrl}/membership/register`, registrationData);
+  }
+
+  /**
+   * User login (all roles: admin, manager, member)
    * @param loginData Login credentials
    * @returns Observable with login response
    */
   adminLogin(loginData: LoginData): Observable<LoginResponse> {
- 
-    return this.http.post<LoginResponse>(`${this.apiUrl}/admin/login`, loginData);
-    
-
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, loginData);
   }
 
   /**
@@ -111,12 +202,7 @@ export class ApiService {
    * @returns Observable with array of approved members
    */
   getApprovedMembers(): Observable<Member[]> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
     return this.http.get<Member[]>(`${this.apiUrl}/members`);
-    
-    // For testing without backend, uncomment below:
-    // return of([]).pipe(delay(500));
   }
 
   /**
@@ -133,12 +219,7 @@ export class ApiService {
    * @returns Observable with contact response
    */
   sendContactMessage(message: ContactMessage): Observable<ContactResponse> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
     return this.http.post<ContactResponse>(`${this.apiUrl}/contact`, message);
-    
-    // For testing without backend, uncomment below:
-    // return of({ success: true, message: 'Message sent successfully' }).pipe(delay(1000));
   }
 
   /**
@@ -146,15 +227,7 @@ export class ApiService {
    * @returns Observable with array of pending members
    */
   getPendingMembers(): Observable<Member[]> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.get<Member[]>(`${this.apiUrl}/admin/pending-members`);
-    
-    // For testing without backend:
-    return of([
-      { id: 1, fullName: 'John Doe', email: 'john@example.com', dob: '1990-01-15', gender: 'male', approvalStatus: 'Pending' as const, role: 'member' as const },
-      { id: 2, fullName: 'Jane Smith', email: 'jane@example.com', dob: '1992-05-20', gender: 'female', approvalStatus: 'Pending' as const, role: 'member' as const }
-    ]).pipe(delay(500));
+    return this.http.get<Member[]>(`${this.apiUrl}/admin/pending-members`);
   }
 
   /**
@@ -163,12 +236,7 @@ export class ApiService {
    * @returns Observable with action response
    */
   approveMember(memberId: number): Observable<ActionResponse> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.post<ActionResponse>(`${this.apiUrl}/admin/approve-member/${memberId}`, {});
-    
-    // For testing without backend:
-    return of({ success: true, message: APP_MESSAGES.SUCCESS.MEMBER_APPROVED }).pipe(delay(500));
+    return this.http.post<ActionResponse>(`${this.apiUrl}/admin/approve-member/${memberId}`, {});
   }
 
   /**
@@ -177,12 +245,7 @@ export class ApiService {
    * @returns Observable with action response
    */
   rejectMember(memberId: number): Observable<ActionResponse> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.post<ActionResponse>(`${this.apiUrl}/admin/reject-member/${memberId}`, {});
-    
-    // For testing without backend:
-    return of({ success: true, message: APP_MESSAGES.SUCCESS.MEMBER_REJECTED }).pipe(delay(500));
+    return this.http.post<ActionResponse>(`${this.apiUrl}/admin/reject-member/${memberId}`, {});
   }
 
   /**
@@ -191,27 +254,184 @@ export class ApiService {
    * @returns Observable with action response
    */
   assignAdmin(memberId: number): Observable<ActionResponse> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.post<ActionResponse>(`${this.apiUrl}/admin/assign-admin/${memberId}`, {});
-    
-    // For testing without backend:
-    return of({ success: true, message: APP_MESSAGES.SUCCESS.ADMIN_ASSIGNED }).pipe(delay(500));
+    return this.http.post<ActionResponse>(`${this.apiUrl}/admin/assign-admin/${memberId}`, {});
   }
 
   /**
-   * Get all admins (admin only)
+   * Get all admins (all authenticated users can view)
    * @returns Observable with array of admin members
    */
   getAllAdmins(): Observable<Member[]> {
-    // Placeholder implementation
-    // TODO: Replace with actual API endpoint when backend is ready
-    // return this.http.get<Member[]>(`${this.apiUrl}/admin/admins`);
-    
-    // For testing without backend:
-    return of([
-      { id: 1, fullName: 'Admin User', email: 'admin@ukclub.com', dob: '1985-01-01', gender: 'male', approvalStatus: 'Approved' as const, role: 'admin' as const }
-    ]).pipe(delay(500));
+    return this.http.get<Member[]>(`${this.apiUrl}/admin/admins`);
   }
+
+  /**
+   * Get all managers (all authenticated users can view)
+   * @returns Observable with array of manager members
+   */
+  getAllManagers(): Observable<Member[]> {
+    return this.http.get<Member[]>(`${this.apiUrl}/admin/managers`);
+  }
+
+  /**
+   * Assign manager role to a member (admin only)
+   * @param memberId Member ID to make manager
+   * @returns Observable with action response
+   */
+  assignManager(memberId: number): Observable<ActionResponse> {
+    return this.http.post<ActionResponse>(`${this.apiUrl}/admin/assign-manager/${memberId}`, {});
+  }
+
+  /**
+   * Get club details (public)
+   * @returns Observable with club details
+   */
+  getClubDetails(): Observable<ClubDetails> {
+    return this.http.get<ClubDetails>(`${this.apiUrl}/club-details`);
+  }
+
+  /**
+   * Update club details (admin only)
+   * @param details Club details to update
+   * @returns Observable with updated club details
+   */
+  updateClubDetails(details: ClubDetailsRequest): Observable<ClubDetails> {
+    return this.http.post<ClubDetails>(`${this.apiUrl}/admin/club-details`, details);
+  }
+
+  /**
+   * Get paginated audit logs with filters (admin only)
+   * @param actionType Filter by action type (optional)
+   * @param startDate Filter by start date (optional)
+   * @param endDate Filter by end date (optional)
+   * @param page Page number (0-indexed, default: 0)
+   * @param size Page size (default: 10)
+   * @returns Observable with paginated audit logs
+   */
+  /**
+   * Get all contact messages (admin/manager only)
+   * @returns Observable with array of contact messages
+   */
+  getContactMessages(): Observable<ContactMessageResponse[]> {
+    return this.http.get<ContactMessageResponse[]>(`${this.apiUrl}/admin/contact-messages`);
+  }
+
+  /**
+   * Get contact messages with pagination (admin/manager only)
+   * @param page Page number (0-indexed)
+   * @param size Page size
+   * @returns Observable with paginated contact messages
+   */
+  getContactMessagesPaginated(page: number = 0, size: number = 10): Observable<ContactMessagePageResponse> {
+    return this.http.get<ContactMessagePageResponse>(`${this.apiUrl}/admin/contact-messages?page=${page}&size=${size}`);
+  }
+
+  /**
+   * Delete contact messages by IDs (admin/manager only)
+   * @param messageIds Array of message IDs to delete
+   * @returns Observable
+   */
+  deleteContactMessages(messageIds: number[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/admin/contact-messages/delete`, { ids: messageIds });
+  }
+
+  getAuditLogs(actionType?: string, startDate?: string, endDate?: string, page: number = 0, size: number = 10): Observable<AuditLogPageResponse> {
+    let params = new URLSearchParams();
+    if (actionType) params.append('actionType', actionType);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    params.append('page', page.toString());
+    params.append('size', size.toString());
+    
+    const queryString = params.toString();
+    const url = `${this.apiUrl}/admin/audit-logs${queryString ? '?' + queryString : ''}`;
+    return this.http.get<AuditLogPageResponse>(url);
+  }
+
+  /**
+   * Get club image URL by filename
+   * @param filename The filename stored in database
+   * @returns Full URL to access the club image
+   */
+  getClubImageUrl(filename: string): string {
+    if (!filename) return '';
+    return `${this.apiUrl}/club-images/${filename}`;
+  }
+
+  /**
+   * Get profile picture URL by filename
+   * @param filename The filename stored in database
+   * @returns Full URL to access the profile picture
+   */
+  getProfilePictureUrl(filename: string): string {
+    if (!filename) return '';
+    return `${this.apiUrl}/profile-pictures/${filename}`;
+  }
+
+  /**
+   * Get club logo URL by filename
+   * @param filename The filename stored in database
+   * @returns Full URL to access the club logo
+   */
+  getClubLogoUrl(filename: string): string {
+    if (!filename) return '';
+    return `${this.apiUrl}/club-logos/${filename}`;
+  }
+
+  /**
+   * Upload club image
+   * @param file The image file to upload
+   * @returns Observable with upload response containing filename
+   */
+  uploadClubImage(file: File): Observable<{ success: boolean; message: string; filename?: string; url?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ success: boolean; message: string; filename?: string; url?: string }>(
+      `${this.apiUrl}/upload/club-image`,
+      formData
+    );
+  }
+
+  /**
+   * Upload club logo
+   * @param file The logo file to upload
+   * @returns Observable with upload response containing filename
+   */
+  uploadClubLogo(file: File): Observable<{ success: boolean; message: string; filename?: string; url?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ success: boolean; message: string; filename?: string; url?: string }>(
+      `${this.apiUrl}/upload/club-logo`,
+      formData
+    );
+  }
+
+  /**
+   * Remove a member (admin can remove non-admins, manager can only remove members)
+   * @param memberId Member ID to remove
+   * @returns Observable with action response
+   */
+  removeMember(memberId: number): Observable<ActionResponse> {
+    return this.http.delete<ActionResponse>(`${this.apiUrl}/admin/remove-member/${memberId}`);
+  }
+
+  /**
+   * Demote manager to regular member (admin only)
+   * @param memberId Member ID to demote
+   * @returns Observable with action response
+   */
+  demoteManagerToMember(memberId: number): Observable<ActionResponse> {
+    return this.http.post<ActionResponse>(`${this.apiUrl}/admin/demote-manager/${memberId}`, {});
+  }
+
+  /**
+   * Promote manager to admin (admin only)
+   * @param memberId Member ID to promote
+   * @returns Observable with action response
+   */
+  promoteManagerToAdmin(memberId: number): Observable<ActionResponse> {
+    return this.http.post<ActionResponse>(`${this.apiUrl}/admin/promote-manager/${memberId}`, {});
+  }
+
 }
 

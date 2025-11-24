@@ -3,7 +3,7 @@
    ============================================ */
 
 /* Image Assets - Path relative to src directory */
-$bg-image-path: './assets/images/membershipPage.jpg';
+$bg-image-path: './assets/images/appBackground.jpg';
 
 /* Dark Theme Variables */
 :root,
@@ -97,8 +97,8 @@ html {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   background: var(--bg-primary);
-  /* Background image - path resolved from src directory */
-  background-image: url('/assets/images/membershipPage.jpg');
+  /* Background image - use relative path for better server compatibility */
+  background-image: url('assets/images/appBackground.jpg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;

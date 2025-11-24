@@ -32,12 +32,21 @@
   margin-bottom: 40px;
   flex-wrap: wrap;
   align-items: center;
+  
+  @media (max-width: 768px) {
+    gap: 16px;
+    margin-bottom: 32px;
+  }
 }
 
 .search-box {
   flex: 1;
   min-width: 300px;
   position: relative;
+  
+  @media (max-width: 768px) {
+    min-width: 100%;
+  }
 }
 
 .search-input {
@@ -50,6 +59,9 @@
   font-size: 1rem;
   transition: all 0.2s ease;
   outline: none;
+  height: 48px;
+  box-sizing: border-box;
+  line-height: 1.5;
   
   &:focus {
     border-color: var(--primary);
@@ -74,27 +86,159 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 200px;
+  position: relative;
+  flex-shrink: 0;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: 100%;
+  }
   
   label {
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    line-height: 1.5;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 48px;
+    letter-spacing: 0.3px;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+    
+    .sort-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--text-secondary);
+      transition: color 0.2s ease, transform 0.2s ease;
+      flex-shrink: 0;
+    }
+    
+    &:hover .sort-icon {
+      color: var(--primary);
+      transform: scale(1.1);
+    }
   }
 }
 
 .sort-select {
-  padding: 12px 16px;
+  padding: 14px 44px 14px 16px;
   background: var(--bg-card);
-  border: 1.5px solid var(--border-medium);
-  border-radius: 8px;
+  border: 2px solid var(--border-medium);
+  border-radius: 10px;
   color: var(--text-primary);
   font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+  min-width: 140px;
+  width: 100%;
+  max-width: 200px;
+  height: 48px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+    width: 100%;
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 0;
+    background: linear-gradient(180deg, var(--primary), var(--primary-light));
+    border-radius: 0 2px 2px 0;
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  &:hover {
+    border-color: var(--primary);
+    background-color: var(--surface-elevated);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    
+    &::before {
+      height: 60%;
+    }
+    
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
   
   &:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 4px 12px rgba(59, 130, 246, 0.15);
+    background-color: var(--surface-elevated);
+    transform: translateY(-1px);
+    
+    &::before {
+      height: 70%;
+    }
+    
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  option {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    
+    &:hover {
+      background: var(--surface-elevated);
+      color: var(--primary);
+    }
+    
+    &:checked {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
+      font-weight: 600;
+    }
+  }
+  
+  // Custom scrollbar for dropdown (if browser supports)
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--bg-card);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 4px;
+    
+    &:hover {
+      background: var(--primary);
+    }
   }
 }
 
@@ -234,6 +378,33 @@
   border-top: 1px solid var(--border-light);
 }
 
+.role-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  
+  &.role-admin {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+    color: var(--primary);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+  
+  &.role-manager {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.2), rgba(184, 134, 91, 0.2));
+    color: #d4a574;
+    border: 1px solid rgba(212, 165, 116, 0.3);
+  }
+  
+  &.role-member {
+    background: rgba(107, 114, 128, 0.1);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-medium);
+  }
+}
+
 .member-date {
   font-size: 0.875rem;
   color: var(--text-light);
@@ -284,14 +455,35 @@
   .members-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
   }
   
   .search-box {
     min-width: 100%;
+    width: 100%;
+  }
+  
+  .sort-controls {
+    width: 100%;
+    
+    label {
+      height: auto;
+      margin-bottom: 8px;
+    }
+    
+    .sort-select {
+      width: 100%;
+      max-width: 100%;
+    }
   }
   
   .members-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .member-card {
+    padding: 24px 20px;
   }
 }
 

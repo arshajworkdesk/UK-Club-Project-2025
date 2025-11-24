@@ -12,18 +12,14 @@ export class AdminGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
-    // TESTING MODE: Always allow access
-    // TODO: Restore actual authentication check in production
-    return true;
-    
-    // Production code (commented for testing):
-    // if (this.authService.isAdmin()) {
-    //   return true;
-    // } else {
-    //   // Redirect to admin login if not authenticated
-    //   this.router.navigate(['/admin/login']);
-    //   return false;
-    // }
+    // Allow all authenticated users (admin, manager, member) to access dashboard
+    if (this.authService.isAuthenticated()) {
+      return true;
+    } else {
+      // Redirect to login if not authenticated
+      this.router.navigate(['/admin/login']);
+      return false;
+    }
   }
 }
 

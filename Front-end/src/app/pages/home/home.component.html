@@ -3,14 +3,14 @@
   <section class="hero-section">
     <div class="hero-content">
       <h1 class="hero-title">
-        Welcome to <span class="highlight">{{ APP_CONSTANTS.BRAND_NAME }}</span>
+        {{ APP_MESSAGES.UI.HOME.WELCOME_TO }} <span class="highlight">{{ clubDetails.clubName || APP_CONSTANTS.BRAND_NAME }}</span>
       </h1>
       <p class="hero-subtitle">
-        Your premier destination for exclusive networking, events, and community engagement
+        {{ APP_MESSAGES.UI.HOME.HERO_SUBTITLE }}
       </p>
       <div class="hero-actions">
         <a routerLink="/membership" class="btn btn-primary">{{ APP_MESSAGES.UI.APPLY_FOR_MEMBERSHIP }}</a>
-        <a routerLink="/members" class="btn btn-secondary">View Members</a>
+        <a routerLink="/members" class="btn btn-secondary">{{ APP_MESSAGES.UI.VIEW_MEMBERS }}</a>
       </div>
     </div>
   </section>
@@ -28,25 +28,29 @@
   <!-- About Section -->
   <section class="about-section">
     <div class="section-container">
-      <h2 class="section-title">About {{ APP_CONSTANTS.BRAND_NAME }}</h2>
+      <h2 class="section-title">{{ APP_MESSAGES.UI.HOME.ABOUT }} {{ clubDetails.clubName || APP_CONSTANTS.BRAND_NAME }}</h2>
       <div class="about-content">
         <div class="about-text">
-          <p>
-            {{ APP_CONSTANTS.BRAND_NAME }} is a prestigious community organization dedicated to bringing together 
-            like-minded individuals from across the United Kingdom. Since our establishment, 
-            we have been committed to fostering connections, organizing exclusive events, and 
-            providing our members with unparalleled opportunities for growth and networking.
+          <div *ngIf="isLoadingClubDetails" class="loading-placeholder">
+            <p>{{ APP_MESSAGES.UI.HOME.LOADING_CLUB_INFO }}</p>
+          </div>
+          <p *ngIf="!isLoadingClubDetails && clubDetails.description">
+            {{ clubDetails.description }}
           </p>
-          <p>
-            Our mission is to create a vibrant ecosystem where members can thrive, share 
-            experiences, and build lasting relationships. Whether you're looking to expand your 
-            professional network, participate in exciting events, or simply be part of an 
-            exclusive community, {{ APP_CONSTANTS.BRAND_NAME }} is the place for you.
+          <p *ngIf="!isLoadingClubDetails && !clubDetails.description">
+            {{ APP_MESSAGES.CLUB_DETAILS.DEFAULT_DESCRIPTION(clubDetails.clubName || APP_CONSTANTS.BRAND_NAME) }}
           </p>
         </div>
         <div class="about-image">
-          <div class="image-placeholder">
-            <span>Club Image</span>
+          <img 
+            *ngIf="getClubImageUrl(clubDetails.clubImage)" 
+            [src]="getClubImageUrl(clubDetails.clubImage)" 
+            [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_IMAGE" 
+            class="club-image"
+            (error)="clubDetails.clubImage = null"
+          />
+          <div *ngIf="!getClubImageUrl(clubDetails.clubImage)" class="image-placeholder">
+            <span>{{ APP_MESSAGES.UI.HOME.CLUB_IMAGE }}</span>
           </div>
         </div>
       </div>
@@ -56,7 +60,7 @@
   <!-- Features Section -->
   <section class="features-section">
     <div class="section-container">
-      <h2 class="section-title">Why Join {{ APP_CONSTANTS.BRAND_NAME }}?</h2>
+      <h2 class="section-title">{{ APP_MESSAGES.UI.HOME.WHY_JOIN }} {{ clubDetails.clubName || APP_CONSTANTS.BRAND_NAME }}?</h2>
       <div class="features-grid">
         <div class="feature-card" *ngFor="let feature of features">
           <div class="feature-icon">{{ feature.icon }}</div>
@@ -70,10 +74,18 @@
   <!-- CTA Section -->
   <section class="cta-section">
     <div class="cta-content">
-      <h2 class="cta-title">Ready to Join Our Community?</h2>
-      <p class="cta-text">Apply for membership and become part of something special</p>
+      <h2 class="cta-title">{{ APP_MESSAGES.UI.HOME.READY_TO_JOIN }}</h2>
+      <p class="cta-text">{{ APP_MESSAGES.UI.HOME.CTA_TEXT }}</p>
       <a routerLink="/membership" class="btn btn-primary btn-large">{{ APP_MESSAGES.UI.APPLY_FOR_MEMBERSHIP }}</a>
     </div>
   </section>
+
+  <!-- Footer Section -->
+  <footer class="home-footer">
+    <div class="footer-content">
+      <p class="copyright">© {{ currentYear }} {{ clubDetails?.clubName || APP_CONSTANTS.BRAND_NAME }}. All rights reserved.</p>
+      <p class="powered-by">{{ APP_MESSAGES.UI.HOME.POWERED_BY }}</p>
+    </div>
+  </footer>
 </div>
 

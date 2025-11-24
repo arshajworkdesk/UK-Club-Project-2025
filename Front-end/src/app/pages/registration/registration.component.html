@@ -11,10 +11,7 @@
   <div class="glass-card" [@cardEntrance]>
     <div class="card-header" [@headerEntrance]>
       <h1 class="title">
-        <span class="title-word">Join</span>
-        <span class="title-word">UK</span>
-        <span class="title-word">Sports</span>
-        <span class="title-word">Club</span>
+        <span class="title-word" *ngFor="let word of getRegistrationTitleWords()">{{ word }}</span>
       </h1>
       <p class="subtitle">{{ APP_MESSAGES.UI.REGISTRATION_SUBTITLE }}</p>
     </div>
@@ -180,9 +177,9 @@
             <span class="file-label-hint">{{ APP_MESSAGES.UI.PROFILE_PICTURE_HINT }}</span>
           </label>
           <div class="file-preview" *ngIf="profilePicturePreview">
-            <img [src]="profilePicturePreview" alt="Profile preview" class="preview-image" />
+            <img [src]="profilePicturePreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.PROFILE_PREVIEW" class="preview-image" />
             <button type="button" class="remove-image" (click)="removeProfilePicture()" tabindex="-1">
-              ×
+              {{ APP_MESSAGES.UI.REGISTRATION.REMOVE_IMAGE }}
             </button>
           </div>
         </div>

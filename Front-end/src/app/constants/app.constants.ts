@@ -4,16 +4,8 @@
 
 export const APP_CONSTANTS = {
   // Brand Information
-  BRAND_NAME: 'UK Sports Club',
-  APP_TITLE: 'UK Sports Club - Registration',
-
-  // Club Contact Information
-  CLUB_INFO: {
-    email: 'contact@ukclub.com',
-    phone: '+44 20 1234 1111',
-    address: '123 Club Street, London, UK, SW1A 1AA',
-    hours: 'Monday - Friday: 9:00 AM - 6:00 PM'
-  },
+  BRAND_NAME: 'Sports Club',
+  APP_TITLE: 'Sports Club - Registration',
 
   // File Upload Constraints
   FILE_UPLOAD: {
@@ -29,9 +21,14 @@ export const APP_CONSTANTS = {
 
   // Image Assets
   IMAGES: {
-    BACKGROUND: 'membershipPage.jpg',
-    BACKGROUND_PATH: './assets/images/membershipPage.jpg',
-    BACKGROUND_PATH_RELATIVE: '../../../assets/images/membershipPage.jpg'
+    BACKGROUND: 'appBackground.jpg',
+    BACKGROUND_PATH: './assets/images/appBackground.jpg',
+    BACKGROUND_PATH_RELATIVE: '../../../assets/images/appBackground.jpg'
+  },
+
+  // Default Values
+  DEFAULTS: {
+    ESTABLISHED_YEAR: 2020
   }
 } as const;
 

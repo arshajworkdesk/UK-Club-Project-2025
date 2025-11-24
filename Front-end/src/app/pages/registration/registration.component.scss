@@ -1,7 +1,7 @@
 @import '../../../styles.scss';
 
-/* Background image path relative to this component */
-$bg-image-path-relative: '../../../assets/images/membershipPage.jpg';
+/* Background image path - relative to component location */
+$bg-image-path-relative: '../../../assets/images/appBackground.jpg';
 
 .registration-container {
   min-height: 100vh;

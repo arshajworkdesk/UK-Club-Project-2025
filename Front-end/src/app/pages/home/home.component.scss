@@ -168,6 +168,22 @@
 }
 
 .about-image {
+  .club-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid var(--border-medium);
+    box-shadow: var(--shadow-md);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.02);
+      box-shadow: var(--shadow-lg);
+    }
+  }
+  
   .image-placeholder {
     aspect-ratio: 4/3;
     background: var(--bg-card);
@@ -380,6 +396,32 @@
   }
 }
 
+// Footer Section
+.home-footer {
+  margin-top: 80px;
+  padding: 40px 20px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-medium);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.copyright {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.powered-by {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  opacity: 0.8;
+}
+
 // Responsive
 @media (max-width: 768px) {
   .hero-title {
@@ -400,6 +442,19 @@
   
   .stats-container {
     grid-template-columns: 1fr;
+  }
+  
+  .home-footer {
+    margin-top: 60px;
+    padding: 32px 16px;
+  }
+  
+  .copyright {
+    font-size: 0.9rem;
+  }
+  
+  .powered-by {
+    font-size: 0.8rem;
   }
 }
 
