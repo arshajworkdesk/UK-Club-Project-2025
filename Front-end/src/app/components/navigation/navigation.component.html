@@ -2,7 +2,14 @@
   <div class="nav-container">
     <div class="nav-brand">
       <a routerLink="/" class="brand-link">
-        <span class="brand-text">{{ APP_CONSTANTS.BRAND_NAME }}</span>
+        <img 
+          *ngIf="clubLogo" 
+          [src]="clubLogo" 
+          [alt]="getClubLogoAlt()"
+          class="brand-logo"
+          (error)="clubLogo = null"
+        />
+        <span class="brand-text">{{ clubName }}</span>
       </a>
     </div>
     
@@ -25,13 +32,13 @@
       <li class="nav-item">
         <a routerLink="/contact" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_CONTACT_US }}</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item" *ngIf="!isAuthenticated">
         <a routerLink="/admin/login" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_ADMIN_LOGIN }}</a>
       </li>
-      <li class="nav-item" *ngIf="isAdmin">
+      <li class="nav-item" *ngIf="isAuthenticated">
         <a routerLink="/admin/dashboard" routerLinkActive="active" (click)="closeMenu()" class="nav-link">{{ APP_MESSAGES.UI.NAV_DASHBOARD }}</a>
       </li>
-      <li class="nav-item" *ngIf="isAdmin">
+      <li class="nav-item" *ngIf="isAuthenticated && !isOnDashboard">
         <a (click)="logout()" class="nav-link">{{ APP_MESSAGES.UI.LOGOUT }}</a>
       </li>
     </ul>

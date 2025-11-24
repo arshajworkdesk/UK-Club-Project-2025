@@ -19,7 +19,14 @@ export class ContactComponent implements OnInit {
   readonly APP_CONSTANTS = APP_CONSTANTS;
   readonly APP_MESSAGES = APP_MESSAGES;
   
-  clubInfo = APP_CONSTANTS.CLUB_INFO;
+  clubInfo: any = {
+    email: '',
+    phone: '',
+    address: '',
+    hours: '',
+    clubName: APP_CONSTANTS.BRAND_NAME
+  };
+  isLoadingClubInfo = true;
 
   constructor(
     private fb: FormBuilder,
@@ -28,12 +35,41 @@ export class ContactComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
+    this.loadClubDetails();
+  }
+  
+  loadClubDetails(): void {
+    this.isLoadingClubInfo = true;
+    this.apiService.getClubDetails().subscribe({
+      next: (details) => {
+        this.clubInfo = {
+          email: details.email || '',
+          phone: details.phone || '',
+          address: details.address || '',
+          hours: details.businessHours || '',
+          clubName: details.clubName || APP_CONSTANTS.BRAND_NAME
+        };
+        this.isLoadingClubInfo = false;
+      },
+      error: (error) => {
+        console.error('Error loading club details:', error);
+        // Use fallback values if API fails
+        this.clubInfo = {
+          email: 'contact@ukclub.com',
+          phone: '+44 20 1234 1111',
+          address: '123 Club Street, London, UK, SW1A 1AA',
+          hours: 'Monday - Friday: 9:00 AM - 6:00 PM'
+        };
+        this.isLoadingClubInfo = false;
+      }
+    });
   }
 
   initializeForm(): void {
     this.contactForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/), Validators.maxLength(10)]],
       subject: ['', [Validators.required]],
       message: ['', [Validators.required, Validators.minLength(10)]]
     });
@@ -45,6 +81,10 @@ export class ContactComponent implements OnInit {
 
   get email() {
     return this.contactForm.get('email');
+  }
+
+  get phone() {
+    return this.contactForm.get('phone');
   }
 
   get subject() {
@@ -65,7 +105,6 @@ export class ContactComponent implements OnInit {
 
       this.apiService.sendContactMessage(formData).subscribe({
         next: (response) => {
-          console.log('Message sent:', response);
           this.isSubmitting = false;
           this.submitSuccess = true;
           this.contactForm.reset();
@@ -100,9 +139,17 @@ export class ContactComponent implements OnInit {
       return APP_MESSAGES.VALIDATION.INVALID_EMAIL;
     }
     
+    if (control?.hasError('pattern') && fieldName === 'phone') {
+      return APP_MESSAGES.VALIDATION.INVALID_PHONE;
+    }
+    
     if (control?.hasError('minlength')) {
       const minLength = control.errors?.['minlength']?.requiredLength;
       return APP_MESSAGES.VALIDATION.MIN_LENGTH(this.getFieldLabel(fieldName), minLength);
+    }
+    
+    if (control?.hasError('maxlength') && fieldName === 'phone') {
+      return APP_MESSAGES.VALIDATION.INVALID_PHONE;
     }
     
     return '';
@@ -110,7 +157,7 @@ export class ContactComponent implements OnInit {
 
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
-      name: APP_MESSAGES.FORM_LABELS.NAME,
+      name: APP_MESSAGES.FORM_LABELS.YOUR_NAME,
       email: APP_MESSAGES.FORM_LABELS.EMAIL,
       subject: APP_MESSAGES.FORM_LABELS.SUBJECT,
       message: APP_MESSAGES.FORM_LABELS.MESSAGE
@@ -121,6 +168,10 @@ export class ContactComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.contactForm.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getContactSubtitle(): string {
+    return APP_MESSAGES.UI.CONTACT_SUBTITLE(this.clubInfo.clubName || APP_CONSTANTS.BRAND_NAME);
   }
 }
 

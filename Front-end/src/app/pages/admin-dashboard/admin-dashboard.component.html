@@ -2,9 +2,28 @@
   <div class="dashboard-header">
     <div class="header-content">
       <h1 class="page-title">{{ APP_MESSAGES.UI.ADMIN_DASHBOARD_TITLE }}</h1>
-      <p class="page-subtitle">{{ APP_MESSAGES.UI.ADMIN_DASHBOARD_SUBTITLE }}</p>
+      <p class="page-subtitle">{{ getDashboardSubtitle() }}</p>
     </div>
-    <button class="logout-button" (click)="logout()">{{ APP_MESSAGES.UI.LOGOUT }}</button>
+    <div class="header-right">
+      <div class="user-welcome-card">
+        <div class="user-profile-picture">
+          <img 
+            *ngIf="getUserProfilePictureUrl()" 
+            [src]="getUserProfilePictureUrl()" 
+            [alt]="getProfilePictureAlt(getCurrentUser()?.fullName)"
+            class="profile-img"
+          />
+          <span *ngIf="!getUserProfilePictureUrl()" class="profile-initial">
+            {{ getCurrentUser()?.fullName?.charAt(0) || 'U' }}
+          </span>
+        </div>
+        <div class="user-info">
+          <p class="welcome-text">{{ APP_MESSAGES.UI.WELCOME_USER }} {{ getCurrentUser()?.fullName || APP_MESSAGES.UI.USER_FALLBACK }}</p>
+          <p class="user-email">{{ getCurrentUser()?.email || '' }}</p>
+        </div>
+      </div>
+      <button class="logout-button" (click)="logout()">{{ APP_MESSAGES.UI.LOGOUT }}</button>
+    </div>
   </div>
 
   <!-- Success/Error Messages -->
@@ -19,6 +38,7 @@
 
   <!-- Tabs -->
   <div class="tabs-container">
+    <!-- Pending tab: Show for all authenticated users -->
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'pending'"
@@ -27,6 +47,7 @@
       {{ APP_MESSAGES.UI.PENDING_MEMBERS }}
       <span class="badge" *ngIf="pendingMembers.length > 0">{{ pendingMembers.length }}</span>
     </button>
+    <!-- Approved tab: Show for all roles -->
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'approved'"
@@ -34,12 +55,41 @@
     >
       {{ APP_MESSAGES.UI.APPROVED_MEMBERS }}
     </button>
+    <!-- Admins tab: Show for admin and manager only -->
     <button 
       class="tab-button" 
       [class.active]="activeTab === 'admins'"
       (click)="switchTab('admins')"
     >
-      {{ APP_MESSAGES.UI.ADMINS }}
+      {{ APP_MESSAGES.UI.ADMINS_AND_MANAGERS }}
+    </button>
+    <!-- Club Details tab: Admin only -->
+    <button 
+      *ngIf="canAssignAdmin()"
+      class="tab-button" 
+      [class.active]="activeTab === 'club-details'"
+      (click)="switchTab('club-details')"
+    >
+      {{ APP_MESSAGES.UI.CLUB_INFO }}
+    </button>
+    <!-- Audit Log tab: Admin only -->
+    <button 
+      *ngIf="canAssignAdmin()"
+      class="tab-button" 
+      [class.active]="activeTab === 'audit-logs'"
+      (click)="switchTab('audit-logs')"
+    >
+      {{ APP_MESSAGES.UI.AUDIT_LOG }}
+    </button>
+    <!-- Contact Messages tab: Admin and Manager only -->
+    <button 
+      *ngIf="canApproveReject()"
+      class="tab-button" 
+      [class.active]="activeTab === 'contact-messages'"
+      (click)="switchTab('contact-messages')"
+    >
+      {{ APP_MESSAGES.UI.NAV_CONTACT_MESSAGES }}
+      <span class="badge" *ngIf="contactMessages.length > 0">{{ contactMessages.length }}</span>
     </button>
   </div>
 
@@ -59,19 +109,41 @@
       <div *ngIf="!isLoading && pendingMembers.length > 0" class="members-list">
         <div class="member-row" *ngFor="let member of pendingMembers">
           <div class="member-info">
-            <div class="member-avatar">{{ member.fullName.charAt(0) }}</div>
+            <div class="member-avatar">
+              <img 
+                *ngIf="getMemberProfilePictureUrl(member)" 
+                [src]="getMemberProfilePictureUrl(member)" 
+                [alt]="getProfilePictureAlt(member.fullName)"
+                class="member-profile-image"
+                (error)="member.profilePictureUrl = undefined"
+              />
+              <span *ngIf="!getMemberProfilePictureUrl(member)" class="member-initial">
+                {{ member.fullName.charAt(0) }}
+              </span>
+            </div>
             <div class="member-details">
               <h3 class="member-name">{{ member.fullName }}</h3>
               <p class="member-email">{{ member.email }}</p>
               <div class="member-meta">
-                <span>DOB: {{ formatDate(member.dob) }}</span>
+                <span>DOB: {{ formatDate(member.dateOfBirth || member.dob) }}</span>
                 <span>Gender: {{ formatGender(member.gender) }}</span>
               </div>
             </div>
           </div>
           <div class="member-actions">
-            <button class="btn-approve" (click)="approveMember(member.id)">Approve</button>
-            <button class="btn-reject" (click)="rejectMember(member.id)">Reject</button>
+            <!-- Show approve/reject buttons to all users (permission checked in methods) -->
+            <button 
+              class="btn-approve" 
+              (click)="approveMember(member.id)"
+            >
+              Approve
+            </button>
+            <button 
+              class="btn-reject" 
+              (click)="rejectMember(member.id)"
+            >
+              Reject
+            </button>
           </div>
         </div>
       </div>
@@ -91,46 +163,87 @@
       <div *ngIf="!isLoading && approvedMembers.length > 0" class="members-list">
         <div class="member-row" *ngFor="let member of approvedMembers">
           <div class="member-info">
-            <div class="member-avatar">{{ member.fullName.charAt(0) }}</div>
+            <div class="member-avatar">
+              <img 
+                *ngIf="getMemberProfilePictureUrl(member)" 
+                [src]="getMemberProfilePictureUrl(member)" 
+                [alt]="getProfilePictureAlt(member.fullName)"
+                class="member-profile-image"
+                (error)="member.profilePictureUrl = undefined"
+              />
+              <span *ngIf="!getMemberProfilePictureUrl(member)" class="member-initial">
+                {{ member.fullName.charAt(0) }}
+              </span>
+            </div>
             <div class="member-details">
               <h3 class="member-name">{{ member.fullName }}</h3>
               <p class="member-email">{{ member.email }}</p>
               <div class="member-meta">
-                <span>DOB: {{ formatDate(member.dob) }}</span>
+                <span>DOB: {{ formatDate(member.dateOfBirth || member.dob) }}</span>
                 <span>Gender: {{ formatGender(member.gender) }}</span>
                 <span class="status-badge approved">Approved</span>
               </div>
             </div>
           </div>
           <div class="member-actions">
+            <!-- Show "Make Admin" and "Make Manager" buttons only for admin role -->
             <button 
+              *ngIf="canAssignAdmin() && member.role !== 'admin' && member.role !== 'manager'"
               class="btn-admin" 
               (click)="assignAdmin(member.id)"
-              *ngIf="member.role !== 'admin'"
             >
               Make Admin
             </button>
+            <button 
+              *ngIf="canAssignAdmin() && member.role !== 'admin' && member.role !== 'manager'"
+              class="btn-manager" 
+              (click)="assignManager(member.id)"
+            >
+              Make Manager
+            </button>
+            <!-- Show remove button: admin can remove non-admins, manager can only remove members -->
+            <button 
+              *ngIf="(canAssignAdmin() && member.role !== 'admin') || (canApproveReject() && !canAssignAdmin() && member.role === 'member')"
+              class="btn-remove" 
+              (click)="removeMember(member.id, member.role)"
+            >
+              Remove
+            </button>
             <span class="admin-badge" *ngIf="member.role === 'admin'">Admin</span>
+            <span class="manager-badge" *ngIf="member.role === 'manager'">Manager</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Admins Tab -->
+    <!-- Admins & Managers Tab -->
     <div *ngIf="activeTab === 'admins'" class="tab-content">
       <div *ngIf="isLoading" class="loading-state">
         <div class="spinner"></div>
-        <p>Loading admins...</p>
+        <p>Loading admins and managers...</p>
       </div>
 
-      <div *ngIf="!isLoading && admins.length === 0" class="empty-state">
-        <p>No admins found</p>
+      <div *ngIf="!isLoading && admins.length === 0 && managers.length === 0" class="empty-state">
+        <p>No admins or managers found</p>
       </div>
 
+      <!-- Admins Section -->
       <div *ngIf="!isLoading && admins.length > 0" class="members-list">
+        <h3 style="margin-bottom: 16px; color: #fff;">Admins</h3>
         <div class="member-row" *ngFor="let admin of admins">
           <div class="member-info">
-            <div class="member-avatar admin">{{ admin.fullName.charAt(0) }}</div>
+            <div class="member-avatar admin">
+              <img 
+                *ngIf="getMemberProfilePictureUrl(admin)" 
+                [src]="getMemberProfilePictureUrl(admin)" 
+                [alt]="getProfilePictureAlt(admin.fullName)"
+                class="member-profile-image"
+                (error)="admin.profilePictureUrl = undefined"
+              />
+              <span *ngIf="!getMemberProfilePictureUrl(admin)" class="member-initial">
+                {{ admin.fullName.charAt(0) }}
+              </span>
+            </div>
             <div class="member-details">
               <h3 class="member-name">{{ admin.fullName }}</h3>
               <p class="member-email">{{ admin.email }}</p>
@@ -141,7 +254,564 @@
           </div>
         </div>
       </div>
+
+      <!-- Managers Section -->
+      <div *ngIf="!isLoading && managers.length > 0" class="members-list" style="margin-top: 24px;">
+        <h3 style="margin-bottom: 16px; color: #fff;">Managers</h3>
+        <div class="member-row" *ngFor="let manager of managers">
+          <div class="member-info">
+            <div class="member-avatar manager">
+              <img 
+                *ngIf="getMemberProfilePictureUrl(manager)" 
+                [src]="getMemberProfilePictureUrl(manager)" 
+                [alt]="getProfilePictureAlt(manager.fullName)"
+                class="member-profile-image"
+                (error)="manager.profilePictureUrl = undefined"
+              />
+              <span *ngIf="!getMemberProfilePictureUrl(manager)" class="member-initial">
+                {{ manager.fullName.charAt(0) }}
+              </span>
+            </div>
+            <div class="member-details">
+              <h3 class="member-name">{{ manager.fullName }}</h3>
+              <p class="member-email">{{ manager.email }}</p>
+              <div class="member-meta">
+                <span class="role-badge manager">Manager</span>
+              </div>
+            </div>
+          </div>
+          <div class="member-actions">
+            <!-- Admin can promote manager to admin, demote to member, or remove manager -->
+            <button 
+              *ngIf="canAssignAdmin()"
+              class="btn-promote" 
+              (click)="promoteManager(manager.id)"
+            >
+              Promote to Admin
+            </button>
+            <button 
+              *ngIf="canAssignAdmin()"
+              class="btn-demote" 
+              (click)="demoteManager(manager.id)"
+            >
+              Demote to Member
+            </button>
+            <button 
+              *ngIf="canAssignAdmin()"
+              class="btn-remove" 
+              (click)="removeMember(manager.id, manager.role)"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Club Details Tab -->
+    <div *ngIf="activeTab === 'club-details'" class="tab-content">
+      <div *ngIf="!clubDetailsForm" class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.LOADING }}</p>
+      </div>
+
+      <div *ngIf="clubDetailsForm && !isEditingClubDetails" class="club-details-header">
+        <h3 class="read-only-title">{{ APP_MESSAGES.UI.CLUB_INFO }}</h3>
+        <button type="button" class="btn-edit" (click)="enableEditMode()">
+          <span>✏️</span> {{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.EDIT || 'Edit' }}
+        </button>
+      </div>
+
+      <form *ngIf="clubDetailsForm" [formGroup]="clubDetailsForm" class="club-details-form" [class.read-only]="!isEditingClubDetails">
+        <div class="form-layout">
+          <div class="form-left-column">
+            <div class="form-section">
+              <h3 class="section-title">Basic Information</h3>
+              
+              <div class="form-group">
+                <label for="clubName" class="form-label">Club Name *</label>
+                <input
+                  type="text"
+                  id="clubName"
+                  formControlName="clubName"
+                  class="form-input"
+                  [class.invalid]="clubDetailsForm.get('clubName')?.invalid && clubDetailsForm.get('clubName')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.ENTER_CLUB_NAME"
+                />
+                <div class="error-message" *ngIf="clubDetailsForm.get('clubName')?.invalid && clubDetailsForm.get('clubName')?.touched">
+                  {{ APP_MESSAGES.FORM_VALIDATION.CLUB_NAME_REQUIRED }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="establishedYear" class="form-label">Established Year *</label>
+                <input
+                  type="number"
+                  id="establishedYear"
+                  formControlName="establishedYear"
+                  class="form-input"
+                  [class.invalid]="clubDetailsForm.get('establishedYear')?.invalid && clubDetailsForm.get('establishedYear')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.ESTABLISHED_YEAR"
+                  min="1800"
+                  max="2100"
+                />
+                <div class="error-message" *ngIf="clubDetailsForm.get('establishedYear')?.invalid && clubDetailsForm.get('establishedYear')?.touched">
+                  {{ APP_MESSAGES.FORM_VALIDATION.YEAR_REQUIRED }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="description" class="form-label">Description *</label>
+                <textarea
+                  id="description"
+                  formControlName="description"
+                  class="form-textarea"
+                  [class.invalid]="clubDetailsForm.get('description')?.invalid && clubDetailsForm.get('description')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.CLUB_DESCRIPTION"
+                  rows="6"
+                ></textarea>
+                <div class="error-message" *ngIf="clubDetailsForm.get('description')?.invalid && clubDetailsForm.get('description')?.touched">
+                  {{ APP_MESSAGES.FORM_VALIDATION.DESCRIPTION_REQUIRED }}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3 class="section-title">Contact Information</h3>
+              
+              <div class="form-group">
+                <label for="email" class="form-label">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  formControlName="email"
+                  class="form-input"
+                  [class.invalid]="clubDetailsForm.get('email')?.invalid && clubDetailsForm.get('email')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.CONTACT_EMAIL"
+                />
+                <div class="error-message" *ngIf="clubDetailsForm.get('email')?.invalid && clubDetailsForm.get('email')?.touched">
+                  {{ APP_MESSAGES.FORM_VALIDATION.EMAIL_REQUIRED }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="phone" class="form-label">Phone *</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  formControlName="phone"
+                  class="form-input"
+                  [class.invalid]="clubDetailsForm.get('phone')?.invalid && clubDetailsForm.get('phone')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.CONTACT_PHONE"
+                  maxlength="10"
+                />
+                <div class="error-message" *ngIf="clubDetailsForm.get('phone')?.invalid && clubDetailsForm.get('phone')?.touched">
+                  <span *ngIf="clubDetailsForm.get('phone')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.PHONE) }}</span>
+                  <span *ngIf="clubDetailsForm.get('phone')?.hasError('pattern') || clubDetailsForm.get('phone')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.INVALID_PHONE }}</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="address" class="form-label">Address *</label>
+                <textarea
+                  id="address"
+                  formControlName="address"
+                  class="form-textarea"
+                  [class.invalid]="clubDetailsForm.get('address')?.invalid && clubDetailsForm.get('address')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.ENTER_ADDRESS"
+                  rows="3"
+                ></textarea>
+                <div class="error-message" *ngIf="clubDetailsForm.get('address')?.invalid && clubDetailsForm.get('address')?.touched">
+                  {{ APP_MESSAGES.FORM_VALIDATION.ADDRESS_REQUIRED }}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="businessHours" class="form-label">Business Hours *</label>
+                <input
+                  type="text"
+                  id="businessHours"
+                  formControlName="businessHours"
+                  class="form-input"
+                  [class.invalid]="clubDetailsForm.get('businessHours')?.invalid && clubDetailsForm.get('businessHours')?.touched"
+                  [placeholder]="APP_MESSAGES.PLACEHOLDERS.BUSINESS_HOURS"
+                />
+                <div class="error-message" *ngIf="clubDetailsForm.get('businessHours')?.invalid && clubDetailsForm.get('businessHours')?.touched">
+                  {{ APP_MESSAGES.FORM_VALIDATION.BUSINESS_HOURS_REQUIRED }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-right-column">
+            <div class="form-section">
+              <h3 class="section-title">{{ APP_MESSAGES.UI.CLUB_DETAILS_SECTIONS.CLUB_LOGO }}</h3>
+              
+              <div class="form-group">
+                <div class="image-upload-container">
+                  <div class="image-preview" *ngIf="clubLogoPreview">
+                    <img [src]="clubLogoPreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_LOGO" class="preview-image" (error)="onClubLogoError($event)" />
+                    <button 
+                      *ngIf="isEditingClubDetails"
+                      type="button" 
+                      class="btn-remove-image" 
+                      (click)="clearClubLogo()"
+                      [title]="APP_MESSAGES.UI.CLUB_DETAILS_FORM.REMOVE_LOGO"
+                      [attr.aria-label]="APP_MESSAGES.UI.CLUB_DETAILS_FORM.REMOVE_LOGO"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div *ngIf="!clubLogoPreview" class="image-placeholder">
+                    <span>{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.NO_LOGO_SELECTED }}</span>
+                  </div>
+                  <input
+                    *ngIf="isEditingClubDetails"
+                    type="file"
+                    id="clubLogo"
+                    accept="image/jpeg,image/jpg,image/png"
+                    class="file-input"
+                    (change)="onClubLogoSelected($event)"
+                  />
+                  <label *ngIf="isEditingClubDetails" for="clubLogo" class="file-input-label">
+                    {{ selectedClubLogo ? APP_MESSAGES.UI.CLUB_DETAILS_FORM.CHANGE_LOGO : (clubLogoPreview ? APP_MESSAGES.UI.CLUB_DETAILS_FORM.CHANGE_LOGO : APP_MESSAGES.UI.CLUB_DETAILS_FORM.UPLOAD_LOGO) }}
+                  </label>
+                  <p class="form-hint" *ngIf="isEditingClubDetails">{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.LOGO_HINT }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h3 class="section-title">{{ APP_MESSAGES.UI.CLUB_DETAILS_SECTIONS.CLUB_IMAGE }}</h3>
+              
+              <div class="form-group">
+                <div class="image-upload-container">
+                  <div class="image-preview" *ngIf="clubImagePreview">
+                    <img [src]="clubImagePreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_IMAGE" class="preview-image" (error)="onClubImageError($event)" />
+                    <button 
+                      *ngIf="isEditingClubDetails"
+                      type="button" 
+                      class="btn-remove-image" 
+                      (click)="clearClubImage()"
+                      [title]="APP_MESSAGES.UI.CLUB_DETAILS_FORM.REMOVE_IMAGE"
+                      [attr.aria-label]="APP_MESSAGES.UI.CLUB_DETAILS_FORM.REMOVE_IMAGE"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <div *ngIf="!clubImagePreview" class="image-placeholder">
+                    <span>{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.NO_IMAGE_SELECTED }}</span>
+                  </div>
+                  <input
+                    *ngIf="isEditingClubDetails"
+                    type="file"
+                    id="clubImage"
+                    accept="image/jpeg,image/jpg,image/png"
+                    class="file-input"
+                    (change)="onClubImageSelected($event)"
+                  />
+                  <label *ngIf="isEditingClubDetails" for="clubImage" class="file-input-label">
+                    {{ selectedClubImage ? APP_MESSAGES.UI.CLUB_DETAILS_FORM.CHANGE_IMAGE : (clubImagePreview ? APP_MESSAGES.UI.CLUB_DETAILS_FORM.CHANGE_IMAGE : APP_MESSAGES.UI.CLUB_DETAILS_FORM.UPLOAD_IMAGE) }}
+                  </label>
+                  <p class="form-hint" *ngIf="isEditingClubDetails">{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.IMAGE_HINT }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions" *ngIf="isEditingClubDetails">
+          <div class="action-buttons-left">
+            <button
+              type="button"
+              class="btn-clear"
+              (click)="clearForm()"
+              [disabled]="isSavingClubDetails"
+            >
+              {{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.CLEAR }}
+            </button>
+            <button
+              type="button"
+              class="btn-cancel"
+              (click)="cancelEdit()"
+              [disabled]="isSavingClubDetails"
+            >
+              {{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.CANCEL }}
+            </button>
+          </div>
+          <button
+            type="button"
+            class="btn-save"
+            (click)="saveClubDetails()"
+            [disabled]="isSavingClubDetails || (clubDetailsForm && clubDetailsForm.invalid)"
+            [title]="clubDetailsForm && clubDetailsForm.invalid ? APP_MESSAGES.UI.CLUB_DETAILS_FORM.FIX_VALIDATION_ERRORS : ''"
+          >
+            <span *ngIf="!isSavingClubDetails">{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.SAVE_CHANGES }}</span>
+            <span *ngIf="isSavingClubDetails" class="button-loading">
+              <span class="spinner"></span>
+              {{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.SAVING }}
+            </span>
+          </button>
+          <div *ngIf="clubDetailsForm && clubDetailsForm.invalid && isEditingClubDetails" class="validation-summary" style="margin-top: 10px; color: #ef4444; font-size: 0.9rem;">
+            <p>{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.FIX_FOLLOWING_ERRORS }}</p>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              <li *ngIf="clubDetailsForm.get('clubName')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.CLUB_NAME_REQUIRED }}</li>
+              <li *ngIf="clubDetailsForm.get('establishedYear')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.YEAR_REQUIRED }}</li>
+              <li *ngIf="clubDetailsForm.get('description')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.DESCRIPTION_REQUIRED }}</li>
+              <li *ngIf="clubDetailsForm.get('email')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.EMAIL_REQUIRED }}</li>
+              <li *ngIf="clubDetailsForm.get('phone')?.invalid">
+                <span *ngIf="clubDetailsForm.get('phone')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.PHONE) }}</span>
+                <span *ngIf="clubDetailsForm.get('phone')?.hasError('pattern') || clubDetailsForm.get('phone')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.INVALID_PHONE }}</span>
+              </li>
+              <li *ngIf="clubDetailsForm.get('address')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.ADDRESS_REQUIRED }}</li>
+              <li *ngIf="clubDetailsForm.get('businessHours')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.BUSINESS_HOURS_REQUIRED }}</li>
+            </ul>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Audit Log Tab -->
+    <div *ngIf="activeTab === 'audit-logs'" class="tab-content">
+      <!-- Filters Section -->
+      <div class="audit-logs-filters">
+        <div class="filter-group">
+          <label for="actionTypeFilter">{{ APP_MESSAGES.UI.AUDIT_LOGS.FILTERS.ACTION_TYPE }}</label>
+          <select 
+            id="actionTypeFilter"
+            [(ngModel)]="auditLogActionTypeFilter"
+            class="filter-select"
+          >
+            <option value="">{{ APP_MESSAGES.UI.AUDIT_LOGS.FILTERS.ALL_ACTIONS }}</option>
+            <option *ngFor="let actionType of getActionTypes()" [value]="actionType">
+              {{ formatActionType(actionType) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="startDateFilter">{{ APP_MESSAGES.UI.AUDIT_LOGS.FILTERS.START_DATE }}</label>
+          <input 
+            type="date"
+            id="startDateFilter"
+            [(ngModel)]="auditLogStartDate"
+            class="filter-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label for="endDateFilter">{{ APP_MESSAGES.UI.AUDIT_LOGS.FILTERS.END_DATE }}</label>
+          <input 
+            type="date"
+            id="endDateFilter"
+            [(ngModel)]="auditLogEndDate"
+            [max]="getMaxDate()"
+            class="filter-input"
+          />
+        </div>
+
+        <div class="filter-actions">
+          <button 
+            type="button"
+            class="btn btn-primary"
+            (click)="applyAuditLogFilters()"
+            [disabled]="isLoadingAuditLogs"
+          >
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.FILTERS.APPLY }}
+          </button>
+          <button 
+            type="button"
+            class="btn btn-secondary"
+            (click)="clearAuditLogFilters()"
+            [disabled]="isLoadingAuditLogs"
+          >
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.FILTERS.CLEAR }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoadingAuditLogs" class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ APP_MESSAGES.UI.AUDIT_LOGS.LOADING }}</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoadingAuditLogs && auditLogs.length === 0" class="empty-state">
+        <p>{{ APP_MESSAGES.UI.AUDIT_LOGS.NO_LOGS }}</p>
+      </div>
+
+      <!-- Audit Logs Table -->
+      <div *ngIf="!isLoadingAuditLogs && auditLogs.length > 0" class="audit-logs-container">
+        <div class="audit-logs-info">
+          <p>{{ getAuditLogInfoText() }}</p>
+        </div>
+        
+        <table class="audit-logs-table">
+          <thead>
+            <tr>
+              <th>{{ APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.TIMESTAMP }}</th>
+              <th>{{ APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.USER }}</th>
+              <th>{{ APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.ACTION }}</th>
+              <th>{{ APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.DESCRIPTION }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of auditLogs">
+              <td [attr.data-label]="APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.TIMESTAMP">{{ formatTimestamp(log.timestamp) }}</td>
+              <td [attr.data-label]="APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.USER">{{ log.userName || log.userEmail }}</td>
+              <td [attr.data-label]="APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.ACTION">{{ formatActionType(log.actionType) }}</td>
+              <td [attr.data-label]="APP_MESSAGES.UI.AUDIT_LOGS.TABLE_HEADERS.DESCRIPTION">{{ log.description }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination Controls -->
+        <div class="pagination-controls" *ngIf="auditLogTotalPages > 1">
+          <button 
+            class="pagination-btn"
+            [disabled]="auditLogCurrentPage === 0 || isLoadingAuditLogs"
+            (click)="goToAuditLogPage(0)"
+          >
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.PAGINATION.FIRST }}
+          </button>
+          <button 
+            class="pagination-btn"
+            [disabled]="auditLogCurrentPage === 0 || isLoadingAuditLogs"
+            (click)="goToAuditLogPage(auditLogCurrentPage - 1)"
+          >
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.PAGINATION.PREVIOUS }}
+          </button>
+          
+          <span class="pagination-info">
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.PAGINATION.PAGE(auditLogCurrentPage + 1, auditLogTotalPages) }}
+          </span>
+          
+          <button 
+            class="pagination-btn"
+            [disabled]="auditLogCurrentPage >= auditLogTotalPages - 1 || isLoadingAuditLogs"
+            (click)="goToAuditLogPage(auditLogCurrentPage + 1)"
+          >
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.PAGINATION.NEXT }}
+          </button>
+          <button 
+            class="pagination-btn"
+            [disabled]="auditLogCurrentPage >= auditLogTotalPages - 1 || isLoadingAuditLogs"
+            (click)="goToAuditLogPage(auditLogTotalPages - 1)"
+          >
+            {{ APP_MESSAGES.UI.AUDIT_LOGS.PAGINATION.LAST }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Messages Tab -->
+    <div *ngIf="activeTab === 'contact-messages'" class="tab-content">
+      <h2 class="tab-title">{{ APP_MESSAGES.UI.NAV_CONTACT_MESSAGES }}</h2>
+
+      <div *ngIf="isLoadingContactMessages" class="loading-state">
+        <div class="spinner"></div>
+        <p>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.LOADING }}</p>
+      </div>
+
+      <div *ngIf="!isLoadingContactMessages && contactMessages.length === 0" class="empty-state">
+        <p>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.NO_MESSAGES }}</p>
+      </div>
+
+      <div *ngIf="!isLoadingContactMessages && contactMessages.length > 0" class="contact-messages-container">
+        <div class="contact-messages-header">
+          <div class="contact-messages-info">
+            <p>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TOTAL_MESSAGES }} {{ contactMessageTotalElements }}</p>
+            <p *ngIf="selectedContactMessageIds.size > 0" class="selected-count">
+              {{ selectedContactMessageIds.size }} {{ APP_MESSAGES.UI.CONTACT_MESSAGES.SELECTED }}
+            </p>
+          </div>
+          <button 
+            class="btn-delete-selected"
+            [class.disabled]="isLoadingContactMessages || selectedContactMessageIds.size === 0"
+            (click)="handleDeleteButtonClick()"
+            [disabled]="isLoadingContactMessages"
+          >
+            <span *ngIf="selectedContactMessageIds.size > 0">
+              {{ APP_MESSAGES.UI.CONTACT_MESSAGES.DELETE_SELECTED_COUNT(selectedContactMessageIds.size) }}
+            </span>
+            <span *ngIf="selectedContactMessageIds.size === 0">
+              {{ APP_MESSAGES.UI.CONTACT_MESSAGES.DELETE_SELECTED }}
+            </span>
+          </button>
+        </div>
+        <table class="contact-messages-table">
+          <thead>
+            <tr>
+              <th class="checkbox-column">
+                <input 
+                  type="checkbox" 
+                  [checked]="areAllContactMessagesSelected()"
+                  [indeterminate]="areSomeContactMessagesSelected()"
+                  (change)="toggleMarkAllContactMessages()"
+                  class="checkbox-input"
+                />
+              </th>
+              <th>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.TIMESTAMP }}</th>
+              <th>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.NAME }}</th>
+              <th>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.EMAIL }}</th>
+              <th>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.PHONE }}</th>
+              <th>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.SUBJECT }}</th>
+              <th>{{ APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.MESSAGE }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let message of contactMessages" [class.selected]="isContactMessageSelected(message.id)">
+              <td class="checkbox-column" [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.SELECT">
+                <input 
+                  type="checkbox" 
+                  [checked]="isContactMessageSelected(message.id)"
+                  (change)="toggleContactMessageSelection(message.id)"
+                  class="checkbox-input"
+                />
+              </td>
+              <td [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.TIMESTAMP">{{ formatContactTimestamp(message.createdAt) }}</td>
+              <td [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.NAME">{{ message.name }}</td>
+              <td [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.EMAIL">
+                <a [href]="'mailto:' + message.email" class="email-link">{{ message.email }}</a>
+              </td>
+              <td [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.PHONE">
+                <a [href]="'tel:' + message.phone" class="phone-link">{{ message.phone }}</a>
+              </td>
+              <td [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.SUBJECT">{{ message.subject }}</td>
+              <td [attr.data-label]="APP_MESSAGES.UI.CONTACT_MESSAGES.TABLE_HEADERS.MESSAGE">
+                <span [title]="message.message">{{ truncateMessage(message.message) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Pagination Controls -->
+        <div class="pagination-controls" *ngIf="contactMessageTotalPages > 1">
+          <button 
+            class="pagination-btn"
+            (click)="previousContactMessagePage()"
+            [disabled]="contactMessageCurrentPage === 0 || isLoadingContactMessages"
+          >
+            {{ APP_MESSAGES.UI.PAGINATION.PREVIOUS }}
+          </button>
+          <span class="pagination-info">
+            {{ APP_MESSAGES.UI.PAGINATION.PAGE_INFO(contactMessageCurrentPage + 1, contactMessageTotalPages, contactMessageTotalElements) }}
+          </span>
+          <button 
+            class="pagination-btn"
+            (click)="nextContactMessagePage()"
+            [disabled]="contactMessageCurrentPage >= contactMessageTotalPages - 1 || isLoadingContactMessages"
+          >
+            {{ APP_MESSAGES.UI.PAGINATION.NEXT }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 

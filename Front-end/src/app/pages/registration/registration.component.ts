@@ -74,10 +74,10 @@ export class RegistrationComponent implements OnInit {
   readonly APP_MESSAGES = APP_MESSAGES;
   
   genderOptions = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' },
-    { value: 'prefer-not-to-say', label: 'Prefer not to say' }
+    { value: 'male', label: APP_MESSAGES.UI.REGISTRATION.GENDER_OPTIONS.MALE },
+    { value: 'female', label: APP_MESSAGES.UI.REGISTRATION.GENDER_OPTIONS.FEMALE },
+    { value: 'other', label: APP_MESSAGES.UI.REGISTRATION.GENDER_OPTIONS.OTHER },
+    { value: 'prefer-not-to-say', label: APP_MESSAGES.UI.REGISTRATION.GENDER_OPTIONS.PREFER_NOT_TO_SAY }
   ];
 
   constructor(
@@ -208,47 +208,88 @@ export class RegistrationComponent implements OnInit {
     if (this.registrationForm.valid && !this.isSubmitting && !this.profilePictureError) {
       this.isSubmitting = true;
       
-      // Create FormData for multipart/form-data upload
-      const formData = new FormData();
-      formData.append('fullName', this.registrationForm.value.fullName);
-      formData.append('email', this.registrationForm.value.email);
-      formData.append('password', this.registrationForm.value.password);
-      formData.append('dob', this.registrationForm.value.dob);
-      formData.append('gender', this.registrationForm.value.gender);
-      
-      // Append profile picture if selected
+      // First, upload profile picture if selected
       if (this.selectedFile) {
-        formData.append('profilePicture', this.selectedFile, this.selectedFile.name);
+        this.apiService.uploadProfilePicture(this.selectedFile).subscribe({
+          next: (uploadResponse) => {
+            if (uploadResponse.success && uploadResponse.filename) {
+              // File uploaded successfully, save only filename (not full URL)
+              this.registerMember(uploadResponse.filename);
+            } else if (uploadResponse.success && uploadResponse.url) {
+              // Fallback: if URL is provided, extract filename
+              const urlParts = uploadResponse.url.split('/');
+              const filename = urlParts[urlParts.length - 1];
+              this.registerMember(filename);
+            } else {
+              this.isSubmitting = false;
+              this.errorMessage = uploadResponse.message || APP_MESSAGES.FILE_UPLOAD.UPLOAD_FAILED;
+              setTimeout(() => {
+                this.errorMessage = '';
+              }, 5000);
+            }
+          },
+          error: (error) => {
+            console.error('Profile picture upload failed:', error);
+            this.isSubmitting = false;
+            this.errorMessage = error.error?.message || APP_MESSAGES.FILE_UPLOAD.UPLOAD_FAILED;
+            setTimeout(() => {
+              this.errorMessage = '';
+            }, 5000);
+          }
+        });
+      } else {
+        // No profile picture, register directly
+        this.registerMember(null);
       }
-
-      // Placeholder for API call
-      this.apiService.registerMembership(formData).subscribe({
-        next: (response) => {
-          console.log('Membership registration successful:', response);
-          this.isSubmitting = false;
-          this.showSuccessMessage = true;
-          this.registrationForm.reset();
-          this.removeProfilePicture();
-          // Hide success message after 5 seconds
-          setTimeout(() => {
-            this.showSuccessMessage = false;
-          }, 5000);
-        },
-        error: (error) => {
-          console.error('Membership registration failed:', error);
-          this.isSubmitting = false;
-          this.errorMessage = APP_MESSAGES.ERROR.REGISTRATION_FAILED;
-          setTimeout(() => {
-            this.errorMessage = '';
-          }, 5000);
-        }
-      });
     } else {
       // Mark all fields as touched to show validation errors
       Object.keys(this.registrationForm.controls).forEach(key => {
         this.registrationForm.get(key)?.markAsTouched();
       });
     }
+  }
+
+  private registerMember(profilePictureUrl: string | null): void {
+    // Prepare registration data (matching backend DTO structure)
+    const registrationData: any = {
+      fullName: this.registrationForm.value.fullName,
+      email: this.registrationForm.value.email,
+      password: this.registrationForm.value.password,
+      dateOfBirth: this.registrationForm.value.dob || null, // Backend expects dateOfBirth
+      gender: this.registrationForm.value.gender || null,
+      profilePictureUrl: profilePictureUrl // Use uploaded file URL
+    };
+
+    // Call API
+    this.apiService.registerMembership(registrationData).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
+        this.showSuccessMessage = true;
+        this.registrationForm.reset();
+        this.removeProfilePicture();
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          this.showSuccessMessage = false;
+        }, 5000);
+      },
+      error: (error) => {
+        console.error('Membership registration failed:', error);
+        this.isSubmitting = false;
+        
+        // Extract error message from backend response
+        if (error.error && error.error.message) {
+          this.errorMessage = error.error.message;
+        } else if (error.error && typeof error.error === 'string') {
+          this.errorMessage = error.error;
+        } else {
+          this.errorMessage = APP_MESSAGES.ERROR.REGISTRATION_FAILED;
+        }
+        
+        setTimeout(() => {
+          this.errorMessage = '';
+        }, 5000);
+      }
+    });
   }
 
   getErrorMessage(fieldName: string): string {
@@ -289,6 +330,10 @@ export class RegistrationComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.registrationForm.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  getRegistrationTitleWords(): string[] {
+    return APP_MESSAGES.UI.REGISTRATION.TITLE.split(' ');
   }
 }
 

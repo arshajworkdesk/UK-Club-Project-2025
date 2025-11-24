@@ -1,32 +1,32 @@
 <div class="contact-container">
   <div class="contact-header">
     <h1 class="page-title">{{ APP_MESSAGES.UI.CONTACT_TITLE }}</h1>
-    <p class="page-subtitle">{{ APP_MESSAGES.UI.CONTACT_SUBTITLE }}</p>
+    <p class="page-subtitle">{{ getContactSubtitle() }}</p>
   </div>
 
   <div class="contact-content">
     <div class="contact-info-section">
       <div class="info-card">
         <div class="info-icon">📧</div>
-        <h3>Email</h3>
+        <h3>{{ APP_MESSAGES.UI.CONTACT_INFO.EMAIL }}</h3>
         <p>{{ clubInfo.email }}</p>
       </div>
       
       <div class="info-card">
         <div class="info-icon">📞</div>
-        <h3>Phone</h3>
+        <h3>{{ APP_MESSAGES.UI.CONTACT_INFO.PHONE }}</h3>
         <p>{{ clubInfo.phone }}</p>
       </div>
       
       <div class="info-card">
         <div class="info-icon">📍</div>
-        <h3>Address</h3>
+        <h3>{{ APP_MESSAGES.UI.CONTACT_INFO.ADDRESS }}</h3>
         <p>{{ clubInfo.address }}</p>
       </div>
       
       <div class="info-card">
         <div class="info-icon">🕐</div>
-        <h3>Business Hours</h3>
+        <h3>{{ APP_MESSAGES.UI.CONTACT_INFO.BUSINESS_HOURS }}</h3>
         <p>{{ clubInfo.hours }}</p>
       </div>
     </div>
@@ -63,6 +63,22 @@
             />
             <div class="error-message" *ngIf="isFieldInvalid('email')">
               {{ getErrorMessage('email') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">{{ APP_MESSAGES.FORM_LABELS.PHONE }}</label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              class="form-input"
+              [class.invalid]="isFieldInvalid('phone')"
+              [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_PHONE"
+              maxlength="10"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('phone')">
+              {{ getErrorMessage('phone') }}
             </div>
           </div>
 

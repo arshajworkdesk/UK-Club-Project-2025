@@ -15,7 +15,8 @@ export class MembersComponent implements OnInit {
   filteredMembers: Member[] = [];
   isLoading = true;
   searchTerm = '';
-  sortBy: 'name' = 'name';
+  sortBy: 'name' | 'email' = 'name';
+  clubName: string = APP_CONSTANTS.BRAND_NAME;
 
   // Expose constants for template
   readonly APP_CONSTANTS = APP_CONSTANTS;
@@ -25,6 +26,21 @@ export class MembersComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadMembers();
+    this.loadClubName();
+  }
+
+  loadClubName(): void {
+    this.apiService.getClubDetails().subscribe({
+      next: (details) => {
+        if (details?.clubName) {
+          this.clubName = details.clubName;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading club name:', error);
+        // Keep default BRAND_NAME
+      }
+    });
   }
 
   loadMembers(): void {
@@ -32,69 +48,101 @@ export class MembersComponent implements OnInit {
     // Get only approved members
     this.apiService.getApprovedMembers().subscribe({
       next: (members) => {
-        // Filter to show only approved members
+        // Backend already returns only approved members, but filter to be safe
         this.members = members.filter(m => m.approvalStatus === 'Approved');
         this.filteredMembers = [...this.members];
+        // Apply initial sort
+        this.applySort();
         this.isLoading = false;
       },
       error: (error) => {
         console.error('Error loading members:', error);
-        // Mock data for development
-        this.members = this.getMockMembers();
-        this.filteredMembers = [...this.members];
+        this.members = [];
+        this.filteredMembers = [];
         this.isLoading = false;
       }
     });
   }
 
-  getMockMembers(): Member[] {
-    return [
-      { id: 1, fullName: 'John Smith', email: 'john.smith@example.com', dob: '1990-05-15', gender: 'male', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 2, fullName: 'Sarah Johnson', email: 'sarah.j@example.com', dob: '1992-08-20', gender: 'female', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 3, fullName: 'Michael Brown', email: 'm.brown@example.com', dob: '1988-03-10', gender: 'male', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 4, fullName: 'Emily Davis', email: 'emily.d@example.com', dob: '1995-11-05', gender: 'female', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const },
-      { id: 5, fullName: 'David Wilson', email: 'd.wilson@example.com', dob: '1991-07-12', gender: 'male', profilePicture: undefined, approvalStatus: 'Approved' as const, role: 'member' as const }
-    ];
-  }
-
   onSearchChange(): void {
     if (!this.searchTerm.trim()) {
       this.filteredMembers = [...this.members];
-      return;
+    } else {
+      const term = this.searchTerm.toLowerCase();
+      this.filteredMembers = this.members.filter(member =>
+        member.fullName.toLowerCase().includes(term) ||
+        member.email.toLowerCase().includes(term)
+      );
     }
+    // Apply current sort after filtering
+    this.applySort();
+  }
 
-    const term = this.searchTerm.toLowerCase();
-    this.filteredMembers = this.members.filter(member =>
-      member.fullName.toLowerCase().includes(term) ||
-      member.email.toLowerCase().includes(term)
-    );
+  private applySort(): void {
+    this.filteredMembers = [...this.filteredMembers].sort((a, b) => {
+      if (this.sortBy === 'email') {
+        return a.email.localeCompare(b.email);
+      } else {
+        // Default to name sorting
+        return a.fullName.localeCompare(b.fullName);
+      }
+    });
   }
 
   onSortChange(): void {
-    this.filteredMembers = [...this.filteredMembers].sort((a, b) => {
-      return a.fullName.localeCompare(b.fullName);
-    });
+    this.applySort();
   }
 
   onImageError(event: Event): void {
     // Hide the image if it fails to load, fallback to initial will show
     const img = event.target as HTMLImageElement;
+    const src = img.src;
+    
+    // If image failed to load and URL contains :8082, try converting to gateway URL
+    if (src && src.includes(':8082')) {
+      const gatewayUrl = src.replace(':8082', ':8080');
+      img.src = gatewayUrl;
+      return; // Try loading with gateway URL
+    }
+    
     img.style.display = 'none';
   }
+  
+  /**
+   * Get profile picture URL using API service
+   * If it's already a full URL, return as is
+   * Otherwise, use API service to construct URL from filename
+   */
+  getImageUrl(url: string | undefined): string | undefined {
+    if (!url) return url;
+    // If it's already a full URL, return as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    // Otherwise, use API service to construct URL from filename
+    return this.apiService.getProfilePictureUrl(url);
+  }
 
-  formatGender(gender?: string): string {
-    if (!gender) return 'N/A';
-    const genderMap: { [key: string]: string } = {
-      'male': 'Male',
-      'female': 'Female',
-      'other': 'Other',
-      'prefer-not-to-say': 'Prefer not to say'
+  formatRole(role?: string): string {
+    if (!role) return 'Member';
+    const roleMap: { [key: string]: string } = {
+      'admin': 'Admin',
+      'manager': 'Manager',
+      'member': 'Member'
     };
-    return genderMap[gender] || gender;
+    return roleMap[role.toLowerCase()] || role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
   }
 
   getShowingMembersMessage(): string {
     return APP_MESSAGES.UI.SHOWING_MEMBERS(this.filteredMembers.length, this.members.length);
+  }
+
+  getMembersSubtitle(): string {
+    return APP_MESSAGES.UI.MEMBERS_SUBTITLE(this.clubName);
+  }
+
+  getProfilePictureAlt(name: string): string {
+    return APP_MESSAGES.UI.IMAGE_ALT.PROFILE_PICTURE(name);
   }
 }
 

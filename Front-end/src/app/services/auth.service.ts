@@ -6,7 +6,7 @@ export interface AdminUser {
   id: number;
   email: string;
   fullName: string;
-  role: 'admin';
+  role: 'admin' | 'manager' | 'member';
 }
 
 @Injectable({
@@ -26,34 +26,39 @@ export class AuthService {
   }
 
   /**
-   * Login as admin - calls backend API
-   * @param email Admin email
-   * @param password Admin password
+   * Login as user (all roles: admin, manager, member) - calls backend API
+   * @param email User email
+   * @param password User password
    * @returns Observable with login response
    */
   login(email: string, password: string): Observable<{ success: boolean; message: string; admin?: AdminUser; token?: string }> {
     return this.apiService.adminLogin({ email, password }).pipe(
       map((response: LoginResponse) => {
         if (response.success && response.admin && response.token) {
-          // Store admin info and token
-          const admin: AdminUser = {
+          // Store user info and token (supports all roles)
+          const user: AdminUser = {
             id: response.admin.id,
             email: response.admin.email,
             fullName: response.admin.fullName,
-            role: 'admin'
+            role: (response.admin.role?.toLowerCase() as 'admin' | 'manager' | 'member') || 'member'
           };
           
-          this.setStoredAdmin(admin);
+          this.setStoredAdmin(user);
           this.setStoredToken(response.token);
-          this.currentAdminSubject.next(admin);
+          this.currentAdminSubject.next(user);
           
           return {
             success: true,
             message: response.message || 'Login successful',
-            admin: admin,
+            admin: user,
             token: response.token
           };
         } else {
+          console.error('Login failed - missing data:', {
+            success: response.success,
+            hasAdmin: !!response.admin,
+            hasToken: !!response.token
+          });
           return {
             success: false,
             message: response.message || 'Login failed'
@@ -77,7 +82,7 @@ export class AuthService {
         } else if (error.error?.message) {
           errorMessage = error.error.message;
         } else if (error.status === 401) {
-          errorMessage = 'Invalid credentials or user is not an admin';
+          errorMessage = 'Invalid credentials. Please check your email and password, or ensure your account is approved.';
         }
         
         return of({
@@ -99,19 +104,65 @@ export class AuthService {
   }
 
   /**
-   * Check if current user is admin
+   * Check if current user is authenticated
    */
-  isAdmin(): boolean {
-    const admin = this.getStoredAdmin();
+  isAuthenticated(): boolean {
+    const user = this.getStoredAdmin();
     const token = this.getStoredToken();
-    return admin !== null && token !== null;
+    return user !== null && token !== null;
   }
 
   /**
-   * Get current admin user
+   * Check if current user is admin (backward compatibility)
+   */
+  isAdmin(): boolean {
+    return this.isAuthenticated();
+  }
+
+  /**
+   * Get current user (all roles)
+   */
+  getCurrentUser(): AdminUser | null {
+    return this.getStoredAdmin();
+  }
+
+  /**
+   * Get current admin user (backward compatibility)
    */
   getCurrentAdmin(): AdminUser | null {
     return this.getStoredAdmin();
+  }
+
+  /**
+   * Get current user role
+   */
+  getUserRole(): 'admin' | 'manager' | 'member' | null {
+    const user = this.getStoredAdmin();
+    return user?.role || null;
+  }
+
+  /**
+   * Check if user can approve/reject members
+   * Allowed: admin, manager
+   */
+  canApproveReject(): boolean {
+    const role = this.getUserRole();
+    return role === 'admin' || role === 'manager';
+  }
+
+  /**
+   * Check if user can assign admin role
+   * Allowed: admin only
+   */
+  canAssignAdmin(): boolean {
+    return this.getUserRole() === 'admin';
+  }
+
+  /**
+   * Check if user is member (view only)
+   */
+  isMember(): boolean {
+    return this.getUserRole() === 'member';
   }
 
   /**
