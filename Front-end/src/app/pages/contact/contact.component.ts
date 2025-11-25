@@ -53,12 +53,13 @@ export class ContactComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading club details:', error);
-        // Use fallback values if API fails
+        // Keep empty values if API fails - no dummy data
         this.clubInfo = {
-          email: 'contact@ukclub.com',
-          phone: '+44 20 1234 1111',
-          address: '123 Club Street, London, UK, SW1A 1AA',
-          hours: 'Monday - Friday: 9:00 AM - 6:00 PM'
+          email: '',
+          phone: '',
+          address: '',
+          hours: '',
+          clubName: APP_CONSTANTS.BRAND_NAME
         };
         this.isLoadingClubInfo = false;
       }

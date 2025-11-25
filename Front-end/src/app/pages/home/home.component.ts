@@ -91,12 +91,28 @@ export class HomeComponent implements OnInit {
 
   /**
    * Get club image URL using API service
-   * @param imageName The filename stored in database
+   * @param imageNameOrUrl The filename, Cloudinary public ID, or full URL stored in database
    * @returns Full URL to access the club image
    */
-  getClubImageUrl(imageName: string | null | undefined): string | null {
-    if (!imageName) return null;
-    return this.apiService.getClubImageUrl(imageName);
+  getClubImageUrl(imageNameOrUrl: string | null | undefined): string | null {
+    if (!imageNameOrUrl) return null;
+    // If it's already a full URL (Cloudinary), return as-is
+    if (imageNameOrUrl.startsWith('http://') || imageNameOrUrl.startsWith('https://')) {
+      return imageNameOrUrl;
+    }
+    // Otherwise, use API service to construct URL (for backward compatibility)
+    return this.apiService.getClubImageUrl(imageNameOrUrl);
+  }
+
+  /**
+   * Handle club image loading error
+   * @param event Error event from image element
+   */
+  onClubImageError(event: Event): void {
+    console.error('Error loading club image:', event);
+    const img = event.target as HTMLImageElement;
+    // If the image fails to load, set clubImage to null to show placeholder
+    this.clubDetails.clubImage = null;
   }
 }
 
