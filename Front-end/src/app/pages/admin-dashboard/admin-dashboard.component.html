@@ -352,11 +352,16 @@
                   class="form-input"
                   [class.invalid]="clubDetailsForm.get('establishedYear')?.invalid && clubDetailsForm.get('establishedYear')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.ESTABLISHED_YEAR"
-                  min="1800"
-                  max="2100"
+                  [min]="1800"
+                  [max]="getCurrentYear()"
                 />
                 <div class="error-message" *ngIf="clubDetailsForm.get('establishedYear')?.invalid && clubDetailsForm.get('establishedYear')?.touched">
-                  {{ APP_MESSAGES.FORM_VALIDATION.YEAR_REQUIRED }}
+                  <span *ngIf="clubDetailsForm.get('establishedYear')?.errors?.['maxYear']">
+                    {{ APP_MESSAGES.FORM_VALIDATION.YEAR_FUTURE }}
+                  </span>
+                  <span *ngIf="!clubDetailsForm.get('establishedYear')?.errors?.['maxYear']">
+                    {{ APP_MESSAGES.FORM_VALIDATION.YEAR_REQUIRED() }}
+                  </span>
                 </div>
               </div>
 
@@ -560,7 +565,14 @@
             <p>{{ APP_MESSAGES.UI.CLUB_DETAILS_FORM.FIX_FOLLOWING_ERRORS }}</p>
             <ul style="margin: 5px 0; padding-left: 20px;">
               <li *ngIf="clubDetailsForm.get('clubName')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.CLUB_NAME_REQUIRED }}</li>
-              <li *ngIf="clubDetailsForm.get('establishedYear')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.YEAR_REQUIRED }}</li>
+              <li *ngIf="clubDetailsForm.get('establishedYear')?.invalid">
+                <span *ngIf="clubDetailsForm.get('establishedYear')?.errors?.['maxYear']">
+                  {{ APP_MESSAGES.FORM_VALIDATION.YEAR_FUTURE }}
+                </span>
+                <span *ngIf="!clubDetailsForm.get('establishedYear')?.errors?.['maxYear']">
+                  {{ APP_MESSAGES.FORM_VALIDATION.YEAR_REQUIRED() }}
+                </span>
+              </li>
               <li *ngIf="clubDetailsForm.get('description')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.DESCRIPTION_REQUIRED }}</li>
               <li *ngIf="clubDetailsForm.get('email')?.invalid">{{ APP_MESSAGES.FORM_VALIDATION.EMAIL_REQUIRED }}</li>
               <li *ngIf="clubDetailsForm.get('phone')?.invalid">

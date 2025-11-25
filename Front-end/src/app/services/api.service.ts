@@ -349,33 +349,48 @@ export class ApiService {
   }
 
   /**
-   * Get club image URL by filename
-   * @param filename The filename stored in database
-   * @returns Full URL to access the club image
+   * Get club image URL by filename or public ID
+   * @param filenameOrUrl The filename, Cloudinary public ID, or full URL stored in database
+   * @returns Full URL to access the club image (Cloudinary URL or API endpoint URL)
    */
-  getClubImageUrl(filename: string): string {
-    if (!filename) return '';
-    return `${this.apiUrl}/club-images/${filename}`;
+  getClubImageUrl(filenameOrUrl: string): string {
+    if (!filenameOrUrl) return '';
+    // If it's already a full URL (Cloudinary or other), return as-is
+    if (filenameOrUrl.startsWith('http://') || filenameOrUrl.startsWith('https://')) {
+      return filenameOrUrl;
+    }
+    // Otherwise, construct API endpoint URL (for backward compatibility)
+    return `${this.apiUrl}/club-images/${filenameOrUrl}`;
   }
 
   /**
-   * Get profile picture URL by filename
-   * @param filename The filename stored in database
-   * @returns Full URL to access the profile picture
+   * Get profile picture URL by filename or public ID
+   * @param filenameOrUrl The filename, Cloudinary public ID, or full URL stored in database
+   * @returns Full URL to access the profile picture (Cloudinary URL or API endpoint URL)
    */
-  getProfilePictureUrl(filename: string): string {
-    if (!filename) return '';
-    return `${this.apiUrl}/profile-pictures/${filename}`;
+  getProfilePictureUrl(filenameOrUrl: string): string {
+    if (!filenameOrUrl) return '';
+    // If it's already a full URL (Cloudinary or other), return as-is
+    if (filenameOrUrl.startsWith('http://') || filenameOrUrl.startsWith('https://')) {
+      return filenameOrUrl;
+    }
+    // Otherwise, construct API endpoint URL (for backward compatibility)
+    return `${this.apiUrl}/profile-pictures/${filenameOrUrl}`;
   }
 
   /**
-   * Get club logo URL by filename
-   * @param filename The filename stored in database
-   * @returns Full URL to access the club logo
+   * Get club logo URL by filename or public ID
+   * @param filenameOrUrl The filename, Cloudinary public ID, or full URL stored in database
+   * @returns Full URL to access the club logo (Cloudinary URL or API endpoint URL)
    */
-  getClubLogoUrl(filename: string): string {
-    if (!filename) return '';
-    return `${this.apiUrl}/club-logos/${filename}`;
+  getClubLogoUrl(filenameOrUrl: string): string {
+    if (!filenameOrUrl) return '';
+    // If it's already a full URL (Cloudinary or other), return as-is
+    if (filenameOrUrl.startsWith('http://') || filenameOrUrl.startsWith('https://')) {
+      return filenameOrUrl;
+    }
+    // Otherwise, construct API endpoint URL (for backward compatibility)
+    return `${this.apiUrl}/club-logos/${filenameOrUrl}`;
   }
 
   /**

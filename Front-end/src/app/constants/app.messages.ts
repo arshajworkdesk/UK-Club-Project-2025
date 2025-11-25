@@ -347,7 +347,8 @@ export const APP_MESSAGES = {
   // Form Validation Messages
   FORM_VALIDATION: {
     CLUB_NAME_REQUIRED: 'Club name is required (max 255 characters)',
-    YEAR_REQUIRED: 'Valid year is required (1800-2100)',
+    YEAR_REQUIRED: (maxYear?: number) => `Valid year is required (1800-${maxYear || new Date().getFullYear()})`,
+    YEAR_FUTURE: 'Established year cannot be in the future',
     DESCRIPTION_REQUIRED: 'Description is required (minimum 50 characters)',
     EMAIL_REQUIRED: 'Valid email is required',
     PHONE_REQUIRED: 'Phone number must be exactly 10 digits',

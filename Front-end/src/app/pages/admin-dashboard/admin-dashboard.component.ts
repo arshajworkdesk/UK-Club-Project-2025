@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { ApiService, Member, ClubDetails, ClubDetailsRequest, AuditLog, AuditLogPageResponse, ContactMessageResponse, ContactMessagePageResponse } from '../../services/api.service';
 import { ToastService } from '../../services/toast.service';
@@ -65,6 +65,11 @@ export class AdminDashboardComponent implements OnInit {
   
   // Expose Math for template
   Math = Math;
+  
+  // Get current year for validation
+  getCurrentYear(): number {
+    return new Date().getFullYear();
+  }
   
   // Permission helpers (exposed to template)
   canApproveReject = () => this.authService.canApproveReject();
@@ -511,7 +516,11 @@ export class AdminDashboardComponent implements OnInit {
   initializeClubDetailsForm(): void {
     this.clubDetailsForm = this.fb.group({
       clubName: ['', [Validators.required, Validators.maxLength(255)]],
-      establishedYear: ['', [Validators.required, Validators.min(1800), Validators.max(2100)]],
+      establishedYear: ['', [
+        Validators.required, 
+        Validators.min(1800), 
+        this.maxYearValidator()
+      ]],
       description: ['', [Validators.required, Validators.minLength(50)]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
       phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/), Validators.maxLength(10)]],
@@ -520,6 +529,26 @@ export class AdminDashboardComponent implements OnInit {
       clubImage: [''],
       clubLogo: ['']
     });
+  }
+
+  /**
+   * Custom validator to ensure established year is not in the future
+   */
+  maxYearValidator(): (control: AbstractControl) => ValidationErrors | null {
+    return (control: AbstractControl): ValidationErrors | null => {
+      if (!control.value) {
+        return null; // Let required validator handle empty values
+      }
+      const currentYear = new Date().getFullYear();
+      const year = parseInt(control.value, 10);
+      if (isNaN(year)) {
+        return null; // Let other validators handle invalid numbers
+      }
+      if (year > currentYear) {
+        return { maxYear: { value: control.value, maxYear: currentYear } };
+      }
+      return null;
+    };
   }
   
   loadClubDetails(): void {
@@ -532,7 +561,10 @@ export class AdminDashboardComponent implements OnInit {
         this.selectedClubLogo = null;
         // Set image preview if club image exists (with cache busting on first load)
         if (details.clubImage) {
-          const imageUrl = this.getClubImagePath(details.clubImage);
+          // If it's already a full URL (Cloudinary), use it directly; otherwise construct API endpoint URL
+          const imageUrl = details.clubImage.startsWith('http://') || details.clubImage.startsWith('https://')
+            ? details.clubImage
+            : this.getClubImagePath(details.clubImage);
           // Add cache busting parameter to ensure fresh load
           this.clubImagePreview = imageUrl + '?t=' + Date.now();
         } else {
@@ -540,7 +572,10 @@ export class AdminDashboardComponent implements OnInit {
         }
         // Set logo preview if club logo exists
         if (details.clubLogo) {
-          const logoUrl = this.getClubLogoPath(details.clubLogo);
+          // If it's already a full URL (Cloudinary), use it directly; otherwise construct API endpoint URL
+          const logoUrl = details.clubLogo.startsWith('http://') || details.clubLogo.startsWith('https://')
+            ? details.clubLogo
+            : this.getClubLogoPath(details.clubLogo);
           this.clubLogoPreview = logoUrl + '?t=' + Date.now();
         } else {
           this.clubLogoPreview = null;
@@ -758,7 +793,11 @@ export class AdminDashboardComponent implements OnInit {
       });
       // Restore original image preview
       if (this.originalClubDetails.clubImage) {
-        this.clubImagePreview = this.getClubImagePath(this.originalClubDetails.clubImage);
+        // If it's already a full URL (Cloudinary), use it directly; otherwise construct API endpoint URL
+        const imageUrl = this.originalClubDetails.clubImage.startsWith('http://') || this.originalClubDetails.clubImage.startsWith('https://')
+          ? this.originalClubDetails.clubImage
+          : this.getClubImagePath(this.originalClubDetails.clubImage);
+        this.clubImagePreview = imageUrl;
       } else {
         this.clubImagePreview = null;
       }
@@ -891,7 +930,10 @@ export class AdminDashboardComponent implements OnInit {
           }
           // Update image preview with the saved image path (with cache busting)
           if (response.clubImage) {
-            const imageUrl = this.getClubImagePath(response.clubImage);
+            // If it's already a full URL (Cloudinary), use it directly; otherwise construct API endpoint URL
+            const imageUrl = response.clubImage.startsWith('http://') || response.clubImage.startsWith('https://')
+              ? response.clubImage
+              : this.getClubImagePath(response.clubImage);
             // Add cache busting parameter to force reload
             this.clubImagePreview = imageUrl + '?t=' + Date.now();
           } else {
@@ -899,7 +941,10 @@ export class AdminDashboardComponent implements OnInit {
           }
           // Update logo preview with the saved logo path (with cache busting)
           if (response.clubLogo) {
-            const logoUrl = this.getClubLogoPath(response.clubLogo);
+            // If it's already a full URL (Cloudinary), use it directly; otherwise construct API endpoint URL
+            const logoUrl = response.clubLogo.startsWith('http://') || response.clubLogo.startsWith('https://')
+              ? response.clubLogo
+              : this.getClubLogoPath(response.clubLogo);
             this.clubLogoPreview = logoUrl + '?t=' + Date.now();
           } else {
             this.clubLogoPreview = null;
