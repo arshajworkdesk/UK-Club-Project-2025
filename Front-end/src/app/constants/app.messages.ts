@@ -330,6 +330,11 @@ export const APP_MESSAGES = {
       CLUB_IMAGE: 'Club Image'
     }
   },
+
+  // Toast / Notification Messages
+  TOASTS: {
+    CLUB_DETAILS_MISSING: 'Club details are not configured yet. Please sign in as an admin and add them from the dashboard.'
+  },
   
   // Club Details Default Description
   CLUB_DETAILS: {

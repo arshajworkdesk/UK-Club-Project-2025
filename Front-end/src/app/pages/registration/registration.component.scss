@@ -220,6 +220,43 @@ $bg-image-path-relative: '../../../assets/images/appBackground.jpg';
   }
 }
 
+// Improve native date input styling (especially on iOS)
+.form-input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  padding-right: 48px;
+  color: var(--text-primary);
+
+  &::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--text-primary);
+    opacity: 0.7;
+    cursor: pointer;
+    font-size: 1.1rem;
+    filter: invert(0.8);
+  }
+
+  // Ensure the date text is legible on dark background
+  &::-webkit-datetime-edit,
+  &::-webkit-datetime-edit-text,
+  &::-webkit-datetime-edit-month-field,
+  &::-webkit-datetime-edit-day-field,
+  &::-webkit-datetime-edit-year-field {
+    color: var(--text-primary);
+    padding: 0 2px;
+  }
+
+  &::-webkit-clear-button,
+  &::-webkit-inner-spin-button {
+    display: none;
+  }
+}
+
 .form-label {
   position: absolute;
   left: 16px;

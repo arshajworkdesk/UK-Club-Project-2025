@@ -71,7 +71,9 @@ export class AppComponent implements OnInit {
         this.updateFavicon(details?.clubLogo);
       },
       error: (error) => {
-        console.error('Error loading club name for title:', error);
+        if (error?.status !== 404) {
+          console.error('Error loading club name for title:', error);
+        }
         // Keep default title from constants
       }
     });

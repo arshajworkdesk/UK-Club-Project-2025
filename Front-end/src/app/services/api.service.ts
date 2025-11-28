@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { ToastService } from './toast.service';
+import { APP_MESSAGES } from '../constants/app.messages';
 
 export interface RegistrationData {
   fullName: string;
@@ -149,6 +152,7 @@ export interface AuditLogPageResponse {
 })
 export class ApiService {
   private apiUrl = environment.apiUrl;
+  private clubDetailsWarningShown = false;
   
   // Subject to notify when club details are updated
   private clubDetailsUpdated$ = new Subject<ClubDetails>();
@@ -158,7 +162,7 @@ export class ApiService {
     return this.clubDetailsUpdated$.asObservable();
   }
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private toastService: ToastService) { }
   
   /**
    * Notify subscribers that club details have been updated
@@ -287,7 +291,15 @@ export class ApiService {
    * @returns Observable with club details
    */
   getClubDetails(): Observable<ClubDetails> {
-    return this.http.get<ClubDetails>(`${this.apiUrl}/club-details`);
+    return this.http.get<ClubDetails>(`${this.apiUrl}/club-details`).pipe(
+      catchError((error) => {
+        if (error?.status === 404 && !this.clubDetailsWarningShown) {
+          this.toastService.warning(APP_MESSAGES.TOASTS.CLUB_DETAILS_MISSING, 6000);
+          this.clubDetailsWarningShown = true;
+        }
+        return throwError(() => error);
+      })
+    );
   }
 
   /**

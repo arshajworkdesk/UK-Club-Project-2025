@@ -1064,8 +1064,7 @@ export class AdminDashboardComponent implements OnInit {
       'ASSIGN_ADMIN',
       'ASSIGN_MANAGER',
       'DEMOTE_MANAGER',
-      'PROMOTE_MANAGER',
-      'LOGIN'
+      'PROMOTE_MANAGER'
     ];
   }
 
@@ -1308,6 +1307,19 @@ export class AdminDashboardComponent implements OnInit {
   getProfilePictureAlt(name?: string): string {
     if (!name) return APP_MESSAGES.UI.IMAGE_ALT.PROFILE_PREVIEW;
     return APP_MESSAGES.UI.IMAGE_ALT.PROFILE_PICTURE(name);
+  }
+
+  /**
+   * Format role for display
+   */
+  formatRole(role?: string): string {
+    if (!role) return 'Member';
+    const roleMap: { [key: string]: string } = {
+      'admin': 'Admin',
+      'manager': 'Manager',
+      'member': 'Member'
+    };
+    return roleMap[role.toLowerCase()] || role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
   }
 }
 
