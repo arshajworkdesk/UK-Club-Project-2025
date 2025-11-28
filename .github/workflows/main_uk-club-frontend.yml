@@ -50,6 +50,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
+          path: deploy
+      
+      - name: List downloaded files
+        run: ls -la deploy/
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -64,5 +68,5 @@ jobs:
         with:
           app-name: 'Uk-Club-Frontend'
           slot-name: 'Production'
-          package: .
+          package: deploy
           
