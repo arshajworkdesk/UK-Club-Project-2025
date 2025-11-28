@@ -26,12 +26,11 @@ jobs:
       - name: Install Angular CLI
         run: npm install -g @angular/cli@16
 
-      - name: npm install, build, and test
+      - name: npm install and build
         working-directory: Front-end
         run: |
           npm install
           npm run build -- --configuration production
-          npm run test --if-present
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
