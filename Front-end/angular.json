@@ -40,7 +40,7 @@
           },
           "configurations": {
             "production": {
-              "baseHref": "/",
+              "baseHref": "/UK-Club-Project-2025/",
               "budgets": [
                 {
                   "type": "initial",
