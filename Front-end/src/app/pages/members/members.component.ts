@@ -37,7 +37,9 @@ export class MembersComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error loading club name:', error);
+        if (error?.status !== 404) {
+          console.error('Error loading club name:', error);
+        }
         // Keep default BRAND_NAME
       }
     });
@@ -90,6 +92,20 @@ export class MembersComponent implements OnInit {
   }
 
   onSortChange(): void {
+    this.applySort();
+  }
+
+  setSort(sort: 'name' | 'email'): void {
+    if (this.sortBy !== sort) {
+      this.sortBy = sort;
+      this.applySort();
+    }
+  }
+
+  resetMemberFilters(): void {
+    this.searchTerm = '';
+    this.sortBy = 'name';
+    this.filteredMembers = [...this.members];
     this.applySort();
   }
 

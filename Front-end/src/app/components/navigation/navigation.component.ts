@@ -81,7 +81,9 @@ export class NavigationComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error loading club name:', error);
+        if (error?.status !== 404) {
+          console.error('Error loading club name:', error);
+        }
         // Keep default BRAND_NAME
       }
     });
