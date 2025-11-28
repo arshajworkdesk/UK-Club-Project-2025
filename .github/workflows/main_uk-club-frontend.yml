@@ -57,6 +57,11 @@ jobs:
           });
           EOF
 
+      - name: Install Express for Azure deployment
+        working-directory: Front-end/dist/uk-club-frontend
+        run: |
+          npm install express --save --production
+
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
