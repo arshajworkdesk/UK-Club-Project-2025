@@ -47,6 +47,7 @@
             [src]="clubImageUrl" 
             [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_IMAGE" 
             class="club-image"
+            crossorigin="anonymous"
             (error)="onClubImageError($event)"
           />
           <div *ngIf="!clubDetails.clubImage || !clubImageUrl" class="image-placeholder">

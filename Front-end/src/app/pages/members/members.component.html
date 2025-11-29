@@ -76,6 +76,7 @@
             [src]="getImageUrl(member.profilePictureUrl || member.profilePicture)" 
             [alt]="getProfilePictureAlt(member.fullName)"
             class="member-profile-image"
+            crossorigin="anonymous"
             (error)="onImageError($event)"
           />
           <span *ngIf="!member.profilePictureUrl && !member.profilePicture" class="member-initial">

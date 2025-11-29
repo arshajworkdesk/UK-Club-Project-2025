@@ -147,6 +147,56 @@ export interface AuditLogPageResponse {
   last: boolean;
 }
 
+export interface SendOtpRequest {
+  email: string;
+}
+
+export interface SendOtpResponse {
+  success: boolean;
+  message: string;
+  resendAllowedAt?: string; // ISO timestamp
+}
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export interface VerifyOtpResponse {
+  success: boolean;
+  message: string;
+  verified: boolean;
+  attemptsRemaining?: number;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface UpdateProfileRequest {
+  fullName: string;
+  dateOfBirth: string;
+  gender: string;
+  profilePictureUrl?: string;
+}
+
+export interface UpdateProfileResponse {
+  success: boolean;
+  message: string;
+  data?: Member;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -184,6 +234,34 @@ export class ApiService {
   }
 
   /**
+   * Send OTP to email address for verification
+   * @param email Email address to send OTP to
+   * @returns Observable with send OTP response
+   */
+  sendOtp(email: string): Observable<SendOtpResponse> {
+    return this.http.post<SendOtpResponse>(`${this.apiUrl}/membership/send-otp`, { email });
+  }
+
+  /**
+   * Verify OTP code
+   * @param email Email address
+   * @param otp 6-digit OTP code
+   * @returns Observable with verify OTP response
+   */
+  verifyOtp(email: string, otp: string): Observable<VerifyOtpResponse> {
+    return this.http.post<VerifyOtpResponse>(`${this.apiUrl}/membership/verify-otp`, { email, otp });
+  }
+
+  /**
+   * Resend OTP to email address
+   * @param email Email address to resend OTP to
+   * @returns Observable with resend OTP response
+   */
+  resendOtp(email: string): Observable<SendOtpResponse> {
+    return this.http.post<SendOtpResponse>(`${this.apiUrl}/membership/resend-otp`, { email });
+  }
+
+  /**
    * Register a new membership
    * @param registrationData Registration data
    * @returns Observable with registration response
@@ -199,6 +277,65 @@ export class ApiService {
    */
   adminLogin(loginData: LoginData): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.apiUrl}/login`, loginData);
+  }
+
+  /**
+   * Send password reset OTP to email address
+   * @param email Email address
+   * @returns Observable with forgot password response
+   */
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  /**
+   * Verify password reset OTP
+   * @param email Email address
+   * @param otp 6-digit OTP code
+   * @returns Observable with verify OTP response
+   */
+  verifyPasswordResetOtp(email: string, otp: string): Observable<VerifyOtpResponse> {
+    return this.http.post<VerifyOtpResponse>(`${this.apiUrl}/auth/verify-reset-otp`, { email, otp });
+  }
+
+  /**
+   * Reset password after OTP verification
+   * @param email Email address
+   * @param newPassword New password
+   * @returns Observable with reset password response
+   */
+  resetPassword(email: string, newPassword: string): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(`${this.apiUrl}/auth/reset-password`, { email, newPassword });
+  }
+
+  /**
+   * Change password when logged in (requires old password)
+   * @param oldPassword Current password
+   * @param newPassword New password
+   * @returns Observable with change password response
+   */
+  changePassword(oldPassword: string, newPassword: string): Observable<ChangePasswordResponse> {
+    return this.http.post<ChangePasswordResponse>(`${this.apiUrl}/auth/change-password`, { oldPassword, newPassword });
+  }
+
+  /**
+   * Update user profile (fullName, dateOfBirth, gender)
+   * @param profileData Profile update data
+   * @returns Observable with update profile response
+   */
+  updateProfile(profileData: UpdateProfileRequest): Observable<UpdateProfileResponse> {
+    return this.http.put<UpdateProfileResponse>(`${this.apiUrl}/admin/profile`, profileData);
+  }
+
+  /**
+   * Update user profile picture
+   * @param file The image file to upload
+   * @returns Observable with update profile picture response containing filename and URL
+   */
+  updateProfilePicture(file: File): Observable<{ success: boolean; message: string; filename?: string; url?: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<{ success: boolean; message: string; filename?: string; url?: string }>(`${this.apiUrl}/admin/profile-picture`, formData);
   }
 
   /**

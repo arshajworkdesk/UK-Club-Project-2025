@@ -12,6 +12,7 @@
             [src]="getUserProfilePictureUrl()" 
             [alt]="getProfilePictureAlt(getCurrentUser()?.fullName)"
             class="profile-img"
+            crossorigin="anonymous"
           />
           <span *ngIf="!getUserProfilePictureUrl()" class="profile-initial">
             {{ getCurrentUser()?.fullName?.charAt(0) || 'U' }}
@@ -21,9 +22,45 @@
           <p class="welcome-text">{{ APP_MESSAGES.UI.WELCOME_USER }} {{ getCurrentUser()?.fullName || APP_MESSAGES.UI.USER_FALLBACK }}</p>
           <p class="user-role">{{ formatRole(getUserRole() || '') }}</p>
           <p class="user-email">{{ getCurrentUser()?.email || '' }}</p>
+          <div class="user-action-buttons">
+            <button 
+              type="button" 
+              class="btn-edit-profile" 
+              (click)="navigateToProfile()"
+            >
+              <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+              </svg>
+              {{ APP_MESSAGES.UI.PROFILE_EDIT_TITLE }}
+            </button>
+            <button 
+              type="button" 
+              class="btn-reset-password" 
+              (click)="navigateToResetPassword()"
+            >
+              <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+              </svg>
+              {{ APP_MESSAGES.UI.RESET_PASSWORD_TITLE }}
+            </button>
+          </div>
         </div>
       </div>
       <button class="logout-button" (click)="logout()">{{ APP_MESSAGES.UI.LOGOUT }}</button>
+    </div>
+  </div>
+
+  <!-- Logout Confirmation Modal -->
+  <div class="logout-modal-backdrop" *ngIf="showLogoutConfirm">
+    <div class="logout-modal">
+      <h3 class="logout-modal-title">{{ APP_MESSAGES.UI.LOGOUT }}</h3>
+      <p class="logout-modal-message">
+        Are you sure you want to logout?
+      </p>
+      <div class="logout-modal-actions">
+        <button type="button" class="btn-secondary" (click)="cancelLogout()">Cancel</button>
+        <button type="button" class="btn-primary" (click)="confirmLogout()">Logout</button>
+      </div>
     </div>
   </div>
 
@@ -116,6 +153,7 @@
                 [src]="getMemberProfilePictureUrl(member)" 
                 [alt]="getProfilePictureAlt(member.fullName)"
                 class="member-profile-image"
+                crossorigin="anonymous"
                 (error)="member.profilePictureUrl = undefined"
               />
               <span *ngIf="!getMemberProfilePictureUrl(member)" class="member-initial">
@@ -135,15 +173,27 @@
             <!-- Show approve/reject buttons to all users (permission checked in methods) -->
             <button 
               class="btn-approve" 
+              [class.loading]="isProcessing(member.id, 'approve')"
+              [disabled]="isProcessing(member.id)"
               (click)="approveMember(member.id)"
             >
-              Approve
+              <span *ngIf="!isProcessing(member.id, 'approve')">Approve</span>
+              <span *ngIf="isProcessing(member.id, 'approve')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
             <button 
               class="btn-reject" 
+              [class.loading]="isProcessing(member.id, 'reject')"
+              [disabled]="isProcessing(member.id)"
               (click)="rejectMember(member.id)"
             >
-              Reject
+              <span *ngIf="!isProcessing(member.id, 'reject')">Reject</span>
+              <span *ngIf="isProcessing(member.id, 'reject')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
           </div>
         </div>
@@ -170,6 +220,7 @@
                 [src]="getMemberProfilePictureUrl(member)" 
                 [alt]="getProfilePictureAlt(member.fullName)"
                 class="member-profile-image"
+                crossorigin="anonymous"
                 (error)="member.profilePictureUrl = undefined"
               />
               <span *ngIf="!getMemberProfilePictureUrl(member)" class="member-initial">
@@ -190,25 +241,43 @@
             <!-- Show "Make Admin" and "Make Manager" buttons only for admin role -->
             <button 
               *ngIf="canAssignAdmin() && member.role !== 'admin' && member.role !== 'manager'"
-              class="btn-admin" 
+              class="btn-admin"
+              [class.loading]="isProcessing(member.id, 'assignAdmin')"
+              [disabled]="isProcessing(member.id)"
               (click)="assignAdmin(member.id)"
             >
-              Make Admin
+              <span *ngIf="!isProcessing(member.id, 'assignAdmin')">Make Admin</span>
+              <span *ngIf="isProcessing(member.id, 'assignAdmin')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
             <button 
               *ngIf="canAssignAdmin() && member.role !== 'admin' && member.role !== 'manager'"
-              class="btn-manager" 
+              class="btn-manager"
+              [class.loading]="isProcessing(member.id, 'assignManager')"
+              [disabled]="isProcessing(member.id)"
               (click)="assignManager(member.id)"
             >
-              Make Manager
+              <span *ngIf="!isProcessing(member.id, 'assignManager')">Make Manager</span>
+              <span *ngIf="isProcessing(member.id, 'assignManager')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
             <!-- Show remove button: admin can remove non-admins, manager can only remove members -->
             <button 
               *ngIf="(canAssignAdmin() && member.role !== 'admin') || (canApproveReject() && !canAssignAdmin() && member.role === 'member')"
-              class="btn-remove" 
+              class="btn-remove"
+              [class.loading]="isProcessing(member.id, 'remove')"
+              [disabled]="isProcessing(member.id)"
               (click)="removeMember(member.id, member.role)"
             >
-              Remove
+              <span *ngIf="!isProcessing(member.id, 'remove')">Remove</span>
+              <span *ngIf="isProcessing(member.id, 'remove')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
             <span class="admin-badge" *ngIf="member.role === 'admin'">Admin</span>
             <span class="manager-badge" *ngIf="member.role === 'manager'">Manager</span>
@@ -239,6 +308,7 @@
                 [src]="getMemberProfilePictureUrl(admin)" 
                 [alt]="getProfilePictureAlt(admin.fullName)"
                 class="member-profile-image"
+                crossorigin="anonymous"
                 (error)="admin.profilePictureUrl = undefined"
               />
               <span *ngIf="!getMemberProfilePictureUrl(admin)" class="member-initial">
@@ -267,6 +337,7 @@
                 [src]="getMemberProfilePictureUrl(manager)" 
                 [alt]="getProfilePictureAlt(manager.fullName)"
                 class="member-profile-image"
+                crossorigin="anonymous"
                 (error)="manager.profilePictureUrl = undefined"
               />
               <span *ngIf="!getMemberProfilePictureUrl(manager)" class="member-initial">
@@ -285,24 +356,42 @@
             <!-- Admin can promote manager to admin, demote to member, or remove manager -->
             <button 
               *ngIf="canAssignAdmin()"
-              class="btn-promote" 
+              class="btn-promote"
+              [class.loading]="isProcessing(manager.id, 'promote')"
+              [disabled]="isProcessing(manager.id)"
               (click)="promoteManager(manager.id)"
             >
-              Promote to Admin
+              <span *ngIf="!isProcessing(manager.id, 'promote')">Promote to Admin</span>
+              <span *ngIf="isProcessing(manager.id, 'promote')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
             <button 
               *ngIf="canAssignAdmin()"
-              class="btn-demote" 
+              class="btn-demote"
+              [class.loading]="isProcessing(manager.id, 'demote')"
+              [disabled]="isProcessing(manager.id)"
               (click)="demoteManager(manager.id)"
             >
-              Demote to Member
+              <span *ngIf="!isProcessing(manager.id, 'demote')">Demote to Member</span>
+              <span *ngIf="isProcessing(manager.id, 'demote')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
             <button 
               *ngIf="canAssignAdmin()"
-              class="btn-remove" 
+              class="btn-remove"
+              [class.loading]="isProcessing(manager.id, 'remove')"
+              [disabled]="isProcessing(manager.id)"
               (click)="removeMember(manager.id, manager.role)"
             >
-              Remove
+              <span *ngIf="!isProcessing(manager.id, 'remove')">Remove</span>
+              <span *ngIf="isProcessing(manager.id, 'remove')" class="button-loading">
+                <span class="spinner"></span>
+                Processing...
+              </span>
             </button>
           </div>
         </div>
@@ -338,9 +427,11 @@
                   class="form-input"
                   [class.invalid]="clubDetailsForm.get('clubName')?.invalid && clubDetailsForm.get('clubName')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.ENTER_CLUB_NAME"
+                  maxlength="30"
                 />
                 <div class="error-message" *ngIf="clubDetailsForm.get('clubName')?.invalid && clubDetailsForm.get('clubName')?.touched">
-                  {{ APP_MESSAGES.FORM_VALIDATION.CLUB_NAME_REQUIRED }}
+                  <span *ngIf="clubDetailsForm.get('clubName')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.CLUB_NAME) }}</span>
+                  <span *ngIf="clubDetailsForm.get('clubName')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.MAX_LENGTH(APP_MESSAGES.FORM_LABELS.CLUB_NAME, 30) }}</span>
                 </div>
               </div>
 
@@ -375,9 +466,12 @@
                   [class.invalid]="clubDetailsForm.get('description')?.invalid && clubDetailsForm.get('description')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.CLUB_DESCRIPTION"
                   rows="6"
+                  maxlength="1000"
                 ></textarea>
                 <div class="error-message" *ngIf="clubDetailsForm.get('description')?.invalid && clubDetailsForm.get('description')?.touched">
-                  {{ APP_MESSAGES.FORM_VALIDATION.DESCRIPTION_REQUIRED }}
+                  <span *ngIf="clubDetailsForm.get('description')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.DESCRIPTION) }}</span>
+                  <span *ngIf="clubDetailsForm.get('description')?.hasError('minlength')">{{ APP_MESSAGES.VALIDATION.MIN_LENGTH(APP_MESSAGES.FORM_LABELS.DESCRIPTION, 50) }}</span>
+                  <span *ngIf="clubDetailsForm.get('description')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.MAX_LENGTH(APP_MESSAGES.FORM_LABELS.DESCRIPTION, 1000) }}</span>
                 </div>
               </div>
             </div>
@@ -394,9 +488,12 @@
                   class="form-input"
                   [class.invalid]="clubDetailsForm.get('email')?.invalid && clubDetailsForm.get('email')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.CONTACT_EMAIL"
+                  maxlength="50"
                 />
                 <div class="error-message" *ngIf="clubDetailsForm.get('email')?.invalid && clubDetailsForm.get('email')?.touched">
-                  {{ APP_MESSAGES.FORM_VALIDATION.EMAIL_REQUIRED }}
+                  <span *ngIf="clubDetailsForm.get('email')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.EMAIL) }}</span>
+                  <span *ngIf="clubDetailsForm.get('email')?.hasError('email')">{{ APP_MESSAGES.VALIDATION.INVALID_EMAIL }}</span>
+                  <span *ngIf="clubDetailsForm.get('email')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.MAX_LENGTH(APP_MESSAGES.FORM_LABELS.EMAIL, 50) }}</span>
                 </div>
               </div>
 
@@ -410,6 +507,8 @@
                   [class.invalid]="clubDetailsForm.get('phone')?.invalid && clubDetailsForm.get('phone')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.CONTACT_PHONE"
                   maxlength="10"
+                  (input)="onPhoneInput($event)"
+                  pattern="[0-9]*"
                 />
                 <div class="error-message" *ngIf="clubDetailsForm.get('phone')?.invalid && clubDetailsForm.get('phone')?.touched">
                   <span *ngIf="clubDetailsForm.get('phone')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.PHONE) }}</span>
@@ -426,9 +525,11 @@
                   [class.invalid]="clubDetailsForm.get('address')?.invalid && clubDetailsForm.get('address')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.ENTER_ADDRESS"
                   rows="3"
+                  maxlength="500"
                 ></textarea>
                 <div class="error-message" *ngIf="clubDetailsForm.get('address')?.invalid && clubDetailsForm.get('address')?.touched">
-                  {{ APP_MESSAGES.FORM_VALIDATION.ADDRESS_REQUIRED }}
+                  <span *ngIf="clubDetailsForm.get('address')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.ADDRESS) }}</span>
+                  <span *ngIf="clubDetailsForm.get('address')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.MAX_LENGTH(APP_MESSAGES.FORM_LABELS.ADDRESS, 500) }}</span>
                 </div>
               </div>
 
@@ -441,9 +542,11 @@
                   class="form-input"
                   [class.invalid]="clubDetailsForm.get('businessHours')?.invalid && clubDetailsForm.get('businessHours')?.touched"
                   [placeholder]="APP_MESSAGES.PLACEHOLDERS.BUSINESS_HOURS"
+                  maxlength="255"
                 />
                 <div class="error-message" *ngIf="clubDetailsForm.get('businessHours')?.invalid && clubDetailsForm.get('businessHours')?.touched">
-                  {{ APP_MESSAGES.FORM_VALIDATION.BUSINESS_HOURS_REQUIRED }}
+                  <span *ngIf="clubDetailsForm.get('businessHours')?.hasError('required')">{{ APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.BUSINESS_HOURS) }}</span>
+                  <span *ngIf="clubDetailsForm.get('businessHours')?.hasError('maxlength')">{{ APP_MESSAGES.VALIDATION.MAX_LENGTH(APP_MESSAGES.FORM_LABELS.BUSINESS_HOURS, 255) }}</span>
                 </div>
               </div>
             </div>
@@ -456,7 +559,7 @@
               <div class="form-group">
                 <div class="image-upload-container">
                   <div class="image-preview" *ngIf="clubLogoPreview">
-                    <img [src]="clubLogoPreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_LOGO" class="preview-image" (error)="onClubLogoError($event)" />
+                    <img [src]="clubLogoPreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_LOGO" class="preview-image" crossorigin="anonymous" (error)="onClubLogoError($event)" />
                     <button 
                       *ngIf="isEditingClubDetails"
                       type="button" 
@@ -495,7 +598,7 @@
               <div class="form-group">
                 <div class="image-upload-container">
                   <div class="image-preview" *ngIf="clubImagePreview">
-                    <img [src]="clubImagePreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_IMAGE" class="preview-image" (error)="onClubImageError($event)" />
+                    <img [src]="clubImagePreview" [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_IMAGE" class="preview-image" crossorigin="anonymous" (error)="onClubImageError($event)" />
                     <button 
                       *ngIf="isEditingClubDetails"
                       type="button" 

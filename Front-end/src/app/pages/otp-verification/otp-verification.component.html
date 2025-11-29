@@ -1,0 +1,92 @@
+<div class="otp-verification-container" [@fadeInUp]>
+  <!-- Modern Background -->
+  <div class="modern-bg">
+    <div class="bg-pattern"></div>
+    <div class="bg-image-overlay"></div>
+  </div>
+
+  <div class="glass-card" [@fadeInUp]>
+    <div class="card-header">
+      <h1 class="title">Verify Your Email</h1>
+      <p class="subtitle">Enter the verification code sent to your email</p>
+    </div>
+
+    <div class="otp-content">
+      <div class="otp-header" [@slideIn]>
+        <p class="otp-instruction">{{ APP_MESSAGES.UI.OTP.ENTER_CODE }}</p>
+        <p class="otp-email">Sent to: <strong>{{ email }}</strong></p>
+      </div>
+      
+      <div class="otp-input-group" [@slideIn]>
+        <input
+          type="text"
+          id="otpCode"
+          [(ngModel)]="otpCode"
+          class="otp-input"
+          [class.invalid]="errorMessage && !showSuccessMessage"
+          placeholder="000000"
+          maxlength="6"
+          pattern="[0-9]{6}"
+          [disabled]="isVerifyingOtp || isCompletingRegistration || showSuccessMessage"
+          (input)="onOtpInputChange($event)"
+        />
+        <label for="otpCode" class="otp-label">6-Digit OTP</label>
+      </div>
+
+      <div class="otp-actions" [@slideIn]>
+        <button
+          type="button"
+          class="otp-verify-button"
+          (click)="verifyOtp()"
+          [disabled]="!otpCode || otpCode.length !== 6 || isVerifyingOtp || isCompletingRegistration || showSuccessMessage"
+        >
+          <span *ngIf="!isVerifyingOtp && !isCompletingRegistration && !showSuccessMessage">{{ APP_MESSAGES.UI.OTP.VERIFY_OTP }}</span>
+          <span *ngIf="isVerifyingOtp" class="button-loading">
+            <span class="spinner"></span>
+            {{ APP_MESSAGES.UI.OTP.VERIFYING }}
+          </span>
+          <span *ngIf="isCompletingRegistration" class="button-loading">
+            <span class="spinner"></span>
+            Completing Registration...
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="otp-resend-button"
+          (click)="resendOtp()"
+          [disabled]="resendCooldown > 0 || isResendingOtp || isCompletingRegistration || showSuccessMessage"
+        >
+          <span *ngIf="!isResendingOtp && resendCooldown === 0 && !isCompletingRegistration && !showSuccessMessage">{{ APP_MESSAGES.UI.OTP.RESEND_OTP }}</span>
+          <span *ngIf="isResendingOtp" class="button-loading">
+            <span class="spinner"></span>
+            {{ APP_MESSAGES.UI.OTP.RESENDING }}
+          </span>
+          <span *ngIf="resendCooldown > 0">{{ getResendCooldownMessage(resendCooldown) }}</span>
+        </button>
+      </div>
+
+      <div class="otp-attempts" *ngIf="verificationAttempts > 0 && !showSuccessMessage" [@slideIn]>
+        <p class="attempts-text">{{ getAttemptsRemainingMessage(5 - verificationAttempts) }}</p>
+      </div>
+
+      <div class="back-link" [@slideIn]>
+        <button type="button" class="back-button" (click)="goBackToRegistration()" [disabled]="isCompletingRegistration || showSuccessMessage">
+          ← Back to Registration
+        </button>
+      </div>
+
+      <!-- Success Message -->
+      <div class="success-message" *ngIf="showSuccessMessage" [@slideIn]>
+        ✓ {{ APP_MESSAGES.SUCCESS.REGISTRATION_SUBMITTED }}
+        <p class="redirect-message">Redirecting to home page...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="errorMessage" [@slideIn]>
+        ✗ {{ errorMessage }}
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,152 @@
+<div class="profile-edit-container" [@fadeIn]>
+  <div class="glass-card">
+    <div class="card-header">
+      <h1 class="title">{{ APP_MESSAGES.UI.PROFILE_EDIT_TITLE }}</h1>
+      <p class="subtitle">Update your profile information</p>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+      <!-- Profile Picture Section -->
+      <div class="form-group profile-picture-section">
+        <label class="form-label">{{ APP_MESSAGES.FORM_LABELS.PROFILE_PICTURE }}</label>
+        <div class="profile-picture-wrapper">
+          <div class="picture-container">
+            <!-- Current Picture or Preview -->
+            <div class="current-picture" *ngIf="!profilePicturePreview">
+              <img 
+                *ngIf="currentProfilePictureUrl" 
+                [src]="currentProfilePictureUrl" 
+                alt="Current profile picture" 
+                class="profile-img" 
+                crossorigin="anonymous" 
+              />
+              <span *ngIf="!currentProfilePictureUrl" class="profile-initial">
+                {{ userProfile?.fullName?.charAt(0) || 'U' }}
+              </span>
+              <!-- Loading overlay when uploading -->
+              <div class="upload-overlay" *ngIf="isUploadingProfilePicture">
+                <div class="upload-spinner">
+                  <span class="spinner"></span>
+                  <p>Uploading...</p>
+                </div>
+              </div>
+            </div>
+            <!-- Preview Picture -->
+            <div class="preview-picture" *ngIf="profilePicturePreview">
+              <img [src]="profilePicturePreview" alt="Profile picture preview" class="profile-img" />
+              <button type="button" class="remove-preview" (click)="removeProfilePictureSelection()" tabindex="-1">
+                ×
+              </button>
+            </div>
+          </div>
+          <div class="picture-actions">
+            <input
+              type="file"
+              id="profilePictureInput"
+              accept="image/jpeg,image/jpg,image/png"
+              (change)="onProfilePictureSelected($event)"
+              class="file-input-hidden"
+              [disabled]="isUploadingProfilePicture"
+            />
+            <label for="profilePictureInput" class="upload-button" [class.disabled]="isUploadingProfilePicture">
+              <span *ngIf="!isUploadingProfilePicture">Choose New Picture</span>
+              <span *ngIf="isUploadingProfilePicture" class="button-loading">
+                <span class="spinner"></span>
+                Uploading...
+              </span>
+            </label>
+            <button
+              type="button"
+              class="upload-now-button"
+              *ngIf="selectedFile && !isUploadingProfilePicture"
+              (click)="uploadProfilePicture()"
+            >
+              Upload Now
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full Name Field -->
+      <div class="form-group">
+        <label for="fullName" class="form-label">{{ APP_MESSAGES.FORM_LABELS.FULL_NAME }}</label>
+        <input
+          type="text"
+          id="fullName"
+          formControlName="fullName"
+          class="form-input"
+          [class.invalid]="isFieldInvalid('fullName')"
+          placeholder="Enter your full name"
+          maxlength="30"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('fullName')">
+          {{ getErrorMessage('fullName') }}
+        </div>
+      </div>
+
+      <!-- Email Field (Read-only) -->
+      <div class="form-group">
+        <label for="email" class="form-label">{{ APP_MESSAGES.FORM_LABELS.EMAIL }} <span class="read-only-hint">(cannot be changed)</span></label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-input"
+          [class.read-only]="true"
+          placeholder="Your email address"
+        />
+      </div>
+
+      <!-- Date of Birth Field -->
+      <div class="form-group">
+        <label for="dateOfBirth" class="form-label">{{ APP_MESSAGES.FORM_LABELS.DATE_OF_BIRTH }}</label>
+        <input
+          type="date"
+          id="dateOfBirth"
+          formControlName="dateOfBirth"
+          class="form-input"
+          [class.invalid]="isFieldInvalid('dateOfBirth')"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('dateOfBirth')">
+          {{ getErrorMessage('dateOfBirth') }}
+        </div>
+      </div>
+
+      <!-- Gender Field -->
+      <div class="form-group">
+        <label for="gender" class="form-label">{{ APP_MESSAGES.FORM_LABELS.GENDER }}</label>
+        <select
+          id="gender"
+          formControlName="gender"
+          class="form-input form-select"
+          [class.invalid]="isFieldInvalid('gender')"
+        >
+          <option value="" disabled>Select gender</option>
+          <option *ngFor="let option of genderOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+        <div class="error-message" *ngIf="isFieldInvalid('gender')">
+          {{ getErrorMessage('gender') }}
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="profileForm.invalid || isSubmitting"
+        >
+          <span *ngIf="!isSubmitting">Save Changes</span>
+          <span *ngIf="isSubmitting" class="button-loading">
+            <span class="spinner"></span>
+            Saving...
+          </span>
+        </button>
+        <button type="button" class="btn-link" (click)="cancel()" [disabled]="isSubmitting">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+

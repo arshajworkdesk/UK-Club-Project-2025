@@ -17,7 +17,14 @@ export const APP_MESSAGES = {
     MEMBER_REMOVED: 'Member removed successfully',
     MANAGER_DEMOTED: 'Manager demoted to member successfully',
     MANAGER_PROMOTED: 'Manager promoted to admin successfully',
-    CLUB_DETAILS_SAVED: 'Club details saved successfully'
+    CLUB_DETAILS_SAVED: 'Club details saved successfully',
+    OTP_SENT: 'OTP has been sent to your email',
+    OTP_VERIFIED: 'Email verified successfully',
+    OTP_RESENT: 'New OTP has been sent to your email',
+    PASSWORD_RESET_SUCCESS: 'Password reset successfully! You can now log in with your new password.',
+    PASSWORD_CHANGED: 'Password changed successfully!',
+    PROFILE_UPDATED_SUCCESS: 'Profile updated successfully!',
+    PROFILE_PICTURE_UPDATED_SUCCESS: 'Profile picture updated successfully!'
   },
 
   // Error Messages
@@ -34,7 +41,17 @@ export const APP_MESSAGES = {
     CAN_ONLY_REMOVE_MEMBERS: 'You can only remove regular members',
     PERMISSION_DENIED_REMOVE: 'You do not have permission to remove members',
     PERMISSION_DENIED_REMOVE_MEMBER: 'You do not have permission to remove this member',
-    CLUB_DETAILS_SAVE_FAILED: 'Failed to save club details. Please try again.'
+    CLUB_DETAILS_SAVE_FAILED: 'Failed to save club details. Please try again.',
+    OTP_INVALID: 'Invalid OTP code',
+    OTP_EXPIRED: 'OTP has expired. Please request a new one',
+    OTP_MAX_ATTEMPTS: 'Maximum verification attempts exceeded. Please request a new OTP',
+    OTP_RESEND_COOLDOWN: 'Please wait {{seconds}} seconds before resending',
+    OTP_SEND_FAILED: 'Failed to send OTP. Please try again later',
+    OTP_VERIFY_FAILED: 'Failed to verify OTP. Please try again',
+    PASSWORD_RESET_FAILED_GENERIC: 'Failed to reset password. Please try again.',
+    PASSWORD_CHANGE_FAILED: 'Failed to change password. Please check your current password and try again.',
+    PROFILE_UPDATE_FAILED: 'Failed to update profile. Please try again.',
+    PROFILE_PICTURE_UPDATE_FAILED: 'Failed to update profile picture. Please try again.'
   },
 
   // Confirmation Messages
@@ -82,6 +99,8 @@ export const APP_MESSAGES = {
       fieldName === 'Password' 
         ? `Password must be at least ${minLength} characters`
         : `${fieldName} must be at least ${minLength} characters`,
+    MAX_LENGTH: (fieldName: string, maxLength: number) => 
+      `${fieldName} must not exceed ${maxLength} characters`,
     PASSWORD_MISMATCH: 'Passwords do not match'
   },
 
@@ -99,7 +118,14 @@ export const APP_MESSAGES = {
     YOUR_EMAIL: 'Your Email',
     PHONE: 'Phone',
     SUBJECT: 'Subject',
-    MESSAGE: 'Message'
+    MESSAGE: 'Message',
+    CLUB_NAME: 'Club Name',
+    DESCRIPTION: 'Description',
+    ADDRESS: 'Address',
+    BUSINESS_HOURS: 'Business Hours',
+    OTP_CODE: 'OTP Code',
+    NEW_PASSWORD: 'New Password',
+    CONFIRM_NEW_PASSWORD: 'Confirm New Password'
   },
 
   // UI Messages
@@ -146,6 +172,11 @@ export const APP_MESSAGES = {
     },
     ADMIN_LOGIN_TITLE: 'Member Login',
     ADMIN_LOGIN_SUBTITLE: 'Sign in to access your dashboard',
+    FORGOT_PASSWORD: 'Forgot Password?',
+    RESET_PASSWORD_TITLE: 'Reset Your Password',
+    RESET_PASSWORD_SUBTITLE: 'Enter your new password',
+    SET_NEW_PASSWORD: 'Set New Password',
+    PROFILE_EDIT_TITLE: 'Edit Profile',
     ADMIN_DASHBOARD_TITLE: 'Dashboard',
     ADMIN_DASHBOARD_SUBTITLE: 'View and manage members',
     MEMBER_DASHBOARD_SUBTITLE: 'View members',
@@ -277,7 +308,7 @@ export const APP_MESSAGES = {
     
     // Registration
     REGISTRATION: {
-      TITLE: 'Join UK Sports Club',
+      TITLE_PREFIX: 'Join', // Will be combined with club name dynamically
       REMOVE_IMAGE: '×',
       GENDER_OPTIONS: {
         MALE: 'Male',
@@ -285,6 +316,17 @@ export const APP_MESSAGES = {
         OTHER: 'Other',
         PREFER_NOT_TO_SAY: 'Prefer not to say'
       }
+    },
+    
+    // OTP Verification
+    OTP: {
+      ENTER_CODE: 'Enter the 6-digit code sent to your email',
+      VERIFY_OTP: 'Verify OTP',
+      RESEND_OTP: 'Resend OTP',
+      RESENDING: 'Resending...',
+      VERIFYING: 'Verifying...',
+      ATTEMPTS_REMAINING: (attempts: number) => `${attempts} attempts remaining`,
+      RESEND_COOLDOWN: (seconds: number) => `Resend available in ${seconds}s`
     },
     
     // Home Features
@@ -366,7 +408,7 @@ export const APP_MESSAGES = {
     ENTER_CLUB_NAME: 'Enter club name',
     ESTABLISHED_YEAR: 'e.g., 2020',
     CLUB_DESCRIPTION: 'Enter club description (minimum 50 characters)',
-    CONTACT_EMAIL: 'contact@ukclub.com',
+    CONTACT_EMAIL: '', // Will be populated from club details
     CONTACT_PHONE: 'Enter 10-digit phone number',
     ENTER_ADDRESS: 'Enter full address',
     BUSINESS_HOURS: 'Monday - Friday: 9:00 AM - 6:00 PM'
