@@ -43,13 +43,13 @@
         </div>
         <div class="about-image">
           <img 
-            *ngIf="clubDetails.clubImage && getClubImageUrl(clubDetails.clubImage)" 
-            [src]="getClubImageUrl(clubDetails.clubImage)" 
+            *ngIf="clubDetails.clubImage && clubImageUrl" 
+            [src]="clubImageUrl" 
             [alt]="APP_MESSAGES.UI.IMAGE_ALT.CLUB_IMAGE" 
             class="club-image"
             (error)="onClubImageError($event)"
           />
-          <div *ngIf="!clubDetails.clubImage || !getClubImageUrl(clubDetails.clubImage)" class="image-placeholder">
+          <div *ngIf="!clubDetails.clubImage || !clubImageUrl" class="image-placeholder">
             <span>{{ APP_MESSAGES.UI.HOME.CLUB_IMAGE }}</span>
           </div>
         </div>

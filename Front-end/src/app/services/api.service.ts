@@ -361,32 +361,34 @@ export class ApiService {
   }
 
   /**
-   * Get club image URL by filename or public ID
-   * @param filenameOrUrl The filename, Cloudinary public ID, or full URL stored in database
-   * @returns Full URL to access the club image (Cloudinary URL or API endpoint URL)
+   * Get club image URL
+   * @param filenameOrUrl The Supabase Storage path (bucket/filename) or full Supabase URL from backend
+   * @returns Full URL to access the club image (Supabase Storage URL)
    */
   getClubImageUrl(filenameOrUrl: string): string {
     if (!filenameOrUrl) return '';
-    // If it's already a full URL (Cloudinary or other), return as-is
+    // If it's already a full URL (Supabase Storage), return as-is
     if (filenameOrUrl.startsWith('http://') || filenameOrUrl.startsWith('https://')) {
       return filenameOrUrl;
     }
-    // Otherwise, construct API endpoint URL (for backward compatibility)
+    // If backend returns a path (bucket/filename), use API endpoint to redirect to Supabase
+    // Note: Backend should normally return full URLs, but this handles edge cases
     return `${this.apiUrl}/club-images/${filenameOrUrl}`;
   }
 
   /**
-   * Get profile picture URL by filename or public ID
-   * @param filenameOrUrl The filename, Cloudinary public ID, or full URL stored in database
-   * @returns Full URL to access the profile picture (Cloudinary URL or API endpoint URL)
+   * Get profile picture URL
+   * @param filenameOrUrl The Supabase Storage path (bucket/filename) or full Supabase URL from backend
+   * @returns Full URL to access the profile picture (Supabase Storage URL)
    */
   getProfilePictureUrl(filenameOrUrl: string): string {
     if (!filenameOrUrl) return '';
-    // If it's already a full URL (Cloudinary or other), return as-is
+    // If it's already a full URL (Supabase Storage), return as-is
     if (filenameOrUrl.startsWith('http://') || filenameOrUrl.startsWith('https://')) {
       return filenameOrUrl;
     }
-    // Otherwise, construct API endpoint URL (for backward compatibility)
+    // If backend returns a path (bucket/filename), use API endpoint to redirect to Supabase
+    // Note: Backend should normally return full URLs, but this handles edge cases
     return `${this.apiUrl}/profile-pictures/${filenameOrUrl}`;
   }
 

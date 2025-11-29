@@ -72,7 +72,7 @@ export class AppComponent implements OnInit {
       },
       error: (error) => {
         if (error?.status !== 404) {
-          console.error('Error loading club name for title:', error);
+        console.error('Error loading club name for title:', error);
         }
         // Keep default title from constants
       }

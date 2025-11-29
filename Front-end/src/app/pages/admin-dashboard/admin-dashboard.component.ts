@@ -93,12 +93,12 @@ export class AdminDashboardComponent implements OnInit {
   // Get user profile picture URL
   getUserProfilePictureUrl(): string | null {
     if (this.currentUserMember?.profilePictureUrl) {
-      // If it's already a full URL, return it
+      // If it's already a full Supabase Storage URL, return it
       if (this.currentUserMember.profilePictureUrl.startsWith('http://') || 
           this.currentUserMember.profilePictureUrl.startsWith('https://')) {
         return this.currentUserMember.profilePictureUrl;
       }
-      // Otherwise, use API service to construct URL from filename
+      // Otherwise, use API service to construct URL from path (backend should normally return full URLs)
       return this.apiService.getProfilePictureUrl(this.currentUserMember.profilePictureUrl);
     }
     return null;
@@ -107,12 +107,12 @@ export class AdminDashboardComponent implements OnInit {
   // Get profile picture URL for any member
   getMemberProfilePictureUrl(member: any): string | null {
     if (member?.profilePictureUrl) {
-      // If it's already a full URL, return it
+      // If it's already a full Supabase Storage URL, return it
       if (member.profilePictureUrl.startsWith('http://') || 
           member.profilePictureUrl.startsWith('https://')) {
         return member.profilePictureUrl;
       }
-      // Otherwise, use API service to construct URL from filename
+      // Otherwise, use API service to construct URL from path (backend should normally return full URLs)
       return this.apiService.getProfilePictureUrl(member.profilePictureUrl);
     }
     return null;
@@ -728,13 +728,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onClubImageError(event: Event): void {
-    console.error('Error loading club image:', event);
     const img = event.target as HTMLImageElement;
-    // Try to reload with cache busting
-    if (img.src) {
-      const url = new URL(img.src);
-      url.searchParams.set('t', Date.now().toString());
-      img.src = url.toString();
+    const currentSrc = img.src;
+    // Add cache busting parameter if not already present
+    if (!currentSrc.includes('?t=')) {
+      img.src = currentSrc + '?t=' + new Date().getTime();
+    } else {
+      // If already tried with cache busting, hide the image to prevent infinite retry loop
+      console.warn('Club image failed to load after retry, hiding image:', currentSrc);
+      img.style.display = 'none';
     }
   }
   

@@ -155,28 +155,48 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
-  align-items: center;
+  align-items: start;
+  min-width: 0; // Prevent grid overflow
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .about-text {
+  min-width: 0; // Prevent text overflow
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  
   p {
     font-size: 1.1rem;
     line-height: 1.8;
     color: var(--text-secondary);
     margin-bottom: 24px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
   }
 }
 
 .about-image {
+  position: relative;
+  width: 100%;
+  min-width: 0; // Prevent grid item overflow
+  flex-shrink: 0; // Prevent image from shrinking
+  
   .club-image {
     width: 100%;
     height: auto;
+    min-height: 200px;
+    max-width: 100%;
     aspect-ratio: 4/3;
     object-fit: cover;
     border-radius: 16px;
     border: 1px solid var(--border-medium);
     box-shadow: var(--shadow-md);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: block;
+    background: var(--bg-card);
     
     &:hover {
       transform: scale(1.02);
@@ -434,6 +454,11 @@
   
   .about-content {
     grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  
+  .about-image {
+    order: -1; // Show image first on mobile
   }
   
   .features-grid {

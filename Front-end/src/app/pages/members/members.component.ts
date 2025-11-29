@@ -38,7 +38,7 @@ export class MembersComponent implements OnInit {
       },
       error: (error) => {
         if (error?.status !== 404) {
-          console.error('Error loading club name:', error);
+        console.error('Error loading club name:', error);
         }
         // Keep default BRAND_NAME
       }
@@ -127,15 +127,15 @@ export class MembersComponent implements OnInit {
   /**
    * Get profile picture URL using API service
    * If it's already a full URL, return as is
-   * Otherwise, use API service to construct URL from filename
+   * Otherwise, use API service to construct URL from path (backend should normally return full Supabase URLs)
    */
   getImageUrl(url: string | undefined): string | undefined {
     if (!url) return url;
-    // If it's already a full URL, return as is
+    // If it's already a full Supabase Storage URL, return as is
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
-    // Otherwise, use API service to construct URL from filename
+    // Otherwise, use API service to construct URL from path (backend should normally return full Supabase URLs)
     return this.apiService.getProfilePictureUrl(url);
   }
 

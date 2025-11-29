@@ -6,7 +6,7 @@
 export const APP_MESSAGES = {
   // Success Messages
   SUCCESS: {
-    REGISTRATION_SUBMITTED: 'Your membership request has been submitted. Awaiting admin approval.',
+    REGISTRATION_SUBMITTED: 'Your membership request has been submitted. Awaiting admin approval. You will be emailed shortly.',
     MEMBERSHIP_REQUEST_SUBMITTED: 'Membership request submitted successfully',
     CONTACT_MESSAGE_SENT: "Message sent successfully! We'll get back to you soon.",
     LOGIN_SUCCESS: 'Login successful',
@@ -330,7 +330,7 @@ export const APP_MESSAGES = {
       CLUB_IMAGE: 'Club Image'
     }
   },
-
+  
   // Toast / Notification Messages
   TOASTS: {
     CLUB_DETAILS_MISSING: 'Club details are not configured yet. Please sign in as an admin and add them from the dashboard.'
