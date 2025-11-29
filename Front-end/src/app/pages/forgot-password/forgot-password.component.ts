@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { ToastService } from '../../services/toast.service';
 import { APP_MESSAGES } from '../../constants/app.messages';
 import { trigger, transition, animate, style } from '@angular/animations';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -52,6 +53,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private apiService: ApiService,
+    private toastService: ToastService,
     private fb: FormBuilder
   ) {
     // Initialize forms
@@ -97,7 +99,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
 
   onEmailSubmit(): void {
     if (this.emailForm.invalid) {
-      this.errorMessage = APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.EMAIL);
+      this.toastService.error(APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.EMAIL), 4000);
       return;
     }
     
@@ -113,23 +115,24 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.isSendingOtp = false;
         if (response.success) {
+          this.toastService.success(APP_MESSAGES.SUCCESS.OTP_SENT, 3000);
           this.step = 2;
           sessionStorage.setItem('forgot_password_step', '2');
           this.startResendCooldown();
         } else {
-          this.errorMessage = response.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED;
+          this.toastService.error(response.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED, 5000);
         }
       },
       error: (error) => {
         this.isSendingOtp = false;
-        this.errorMessage = error.error?.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED;
+        this.toastService.error(error.error?.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED, 5000);
       }
     });
   }
 
   onOtpSubmit(): void {
     if (this.otpForm.invalid) {
-      this.errorMessage = APP_MESSAGES.ERROR.OTP_INVALID;
+      this.toastService.error(APP_MESSAGES.ERROR.OTP_INVALID, 4000);
       return;
     }
     
@@ -141,15 +144,16 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.isVerifyingOtp = false;
         if (response.success && response.verified) {
+          this.toastService.success(APP_MESSAGES.SUCCESS.OTP_VERIFIED, 3000);
           this.step = 3;
           sessionStorage.setItem('forgot_password_step', '3');
         } else {
-          this.errorMessage = response.message || APP_MESSAGES.ERROR.OTP_INVALID;
+          this.toastService.error(response.message || APP_MESSAGES.ERROR.OTP_INVALID, 5000);
         }
       },
       error: (error) => {
         this.isVerifyingOtp = false;
-        this.errorMessage = error.error?.message || APP_MESSAGES.ERROR.OTP_VERIFY_FAILED;
+        this.toastService.error(error.error?.message || APP_MESSAGES.ERROR.OTP_VERIFY_FAILED, 5000);
       }
     });
   }
@@ -157,9 +161,9 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   onPasswordSubmit(): void {
     if (this.passwordForm.invalid) {
       if (this.passwordForm.hasError('passwordMismatch')) {
-        this.errorMessage = APP_MESSAGES.VALIDATION.PASSWORD_MISMATCH;
+        this.toastService.error(APP_MESSAGES.VALIDATION.PASSWORD_MISMATCH, 4000);
       } else {
-        this.errorMessage = APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.NEW_PASSWORD);
+        this.toastService.error(APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.NEW_PASSWORD), 4000);
       }
       return;
     }
@@ -172,21 +176,22 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.isResettingPassword = false;
         if (response.success) {
-          this.successMessage = response.message || APP_MESSAGES.SUCCESS.PASSWORD_RESET_SUCCESS;
+          this.toastService.success(response.message || APP_MESSAGES.SUCCESS.PASSWORD_RESET_SUCCESS, 3000);
           // Clear sessionStorage
           sessionStorage.removeItem('forgot_password_email');
           sessionStorage.removeItem('forgot_password_step');
-          // Redirect to login immediately (success message will persist after navigation)
+          // Redirect to login immediately (toast will persist after navigation)
           setTimeout(() => {
             this.router.navigate(['/admin/login']);
           }, 100);
         } else {
-          this.errorMessage = response.message || APP_MESSAGES.ERROR.PASSWORD_RESET_FAILED_GENERIC;
+          this.toastService.error(response.message || APP_MESSAGES.ERROR.PASSWORD_RESET_FAILED_GENERIC, 5000);
         }
       },
       error: (error) => {
         this.isResettingPassword = false;
-        this.errorMessage = error.error?.message || APP_MESSAGES.ERROR.PASSWORD_RESET_FAILED_GENERIC;
+        const errorMsg = error.error?.message || APP_MESSAGES.ERROR.PASSWORD_RESET_FAILED_GENERIC;
+        this.toastService.error(errorMsg, 5000);
       }
     });
   }
@@ -203,14 +208,15 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
       next: (response) => {
         this.isResendingOtp = false;
         if (response.success) {
+          this.toastService.success(APP_MESSAGES.SUCCESS.OTP_RESENT, 3000);
           this.startResendCooldown();
         } else {
-          this.errorMessage = response.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED;
+          this.toastService.error(response.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED, 5000);
         }
       },
       error: (error) => {
         this.isResendingOtp = false;
-        this.errorMessage = error.error?.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED;
+        this.toastService.error(error.error?.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED, 5000);
       }
     });
   }
