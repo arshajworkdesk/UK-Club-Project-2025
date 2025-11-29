@@ -47,7 +47,11 @@ export class AdminDashboardComponent implements OnInit {
   selectedContactMessageIds: Set<number> = new Set();
   errorMessage = '';
   successMessage = '';
+  showLogoutConfirm = false;
   currentUserMember: Member | null = null;
+  
+  // Track processing state per member ID to prevent multiple clicks
+  processingMembers: Map<number, string> = new Map(); // memberId -> action type
   
   // Club details
   clubDetails: any = null;
@@ -93,12 +97,12 @@ export class AdminDashboardComponent implements OnInit {
   // Get user profile picture URL
   getUserProfilePictureUrl(): string | null {
     if (this.currentUserMember?.profilePictureUrl) {
-      // If it's already a full URL, return it
+      // If it's already a full Supabase Storage URL, return it
       if (this.currentUserMember.profilePictureUrl.startsWith('http://') || 
           this.currentUserMember.profilePictureUrl.startsWith('https://')) {
         return this.currentUserMember.profilePictureUrl;
       }
-      // Otherwise, use API service to construct URL from filename
+      // Otherwise, use API service to construct URL from path (backend should normally return full URLs)
       return this.apiService.getProfilePictureUrl(this.currentUserMember.profilePictureUrl);
     }
     return null;
@@ -107,12 +111,12 @@ export class AdminDashboardComponent implements OnInit {
   // Get profile picture URL for any member
   getMemberProfilePictureUrl(member: any): string | null {
     if (member?.profilePictureUrl) {
-      // If it's already a full URL, return it
+      // If it's already a full Supabase Storage URL, return it
       if (member.profilePictureUrl.startsWith('http://') || 
           member.profilePictureUrl.startsWith('https://')) {
         return member.profilePictureUrl;
       }
-      // Otherwise, use API service to construct URL from filename
+      // Otherwise, use API service to construct URL from path (backend should normally return full URLs)
       return this.apiService.getProfilePictureUrl(member.profilePictureUrl);
     }
     return null;
@@ -232,10 +236,45 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
+  /**
+   * Check if a member is currently being processed for any action
+   * @param memberId Member ID to check
+   * @param action Optional action type to check for specific action
+   * @returns true if member is being processed
+   */
+  isProcessing(memberId: number, action?: string): boolean {
+    if (action) {
+      return this.processingMembers.get(memberId) === action;
+    }
+    return this.processingMembers.has(memberId);
+  }
+
+  /**
+   * Set a member as processing for a specific action
+   * @param memberId Member ID
+   * @param action Action type (e.g., 'approve', 'reject', 'assignAdmin', etc.)
+   */
+  setProcessing(memberId: number, action: string): void {
+    this.processingMembers.set(memberId, action);
+  }
+
+  /**
+   * Clear processing state for a member
+   * @param memberId Member ID
+   */
+  clearProcessing(memberId: number): void {
+    this.processingMembers.delete(memberId);
+  }
+
   approveMember(memberId: number): void {
     // Check permission before action
     if (!this.authService.canApproveReject()) {
       this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED_APPROVE_REJECT);
+      return;
+    }
+
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
       return;
     }
 
@@ -247,14 +286,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'info'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'approve');
         this.apiService.approveMember(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.success(APP_MESSAGES.SUCCESS.MEMBER_APPROVED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error approving member:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED_APPROVE_REJECT);
@@ -274,6 +316,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
+      return;
+    }
+
     this.confirmationDialog.show({
       title: APP_MESSAGES.CONFIRMATION.REJECT_TITLE,
       message: APP_MESSAGES.CONFIRMATION.REJECT_MEMBER,
@@ -282,14 +329,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'danger'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'reject');
         this.apiService.rejectMember(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.error(APP_MESSAGES.SUCCESS.MEMBER_REJECTED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error rejecting member:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED_APPROVE_REJECT);
@@ -309,6 +359,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
+      return;
+    }
+
     this.confirmationDialog.show({
       title: APP_MESSAGES.CONFIRMATION.ASSIGN_ADMIN_TITLE,
       message: APP_MESSAGES.CONFIRMATION.ASSIGN_ADMIN,
@@ -317,14 +372,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'warning'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'assignAdmin');
         this.apiService.assignAdmin(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.success(APP_MESSAGES.SUCCESS.ADMIN_ASSIGNED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error assigning admin:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED);
@@ -344,6 +402,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
+      return;
+    }
+
     this.confirmationDialog.show({
       title: APP_MESSAGES.CONFIRMATION.ASSIGN_MANAGER_TITLE,
       message: APP_MESSAGES.CONFIRMATION.ASSIGN_MANAGER,
@@ -352,14 +415,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'warning'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'assignManager');
         this.apiService.assignManager(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.success(APP_MESSAGES.SUCCESS.MANAGER_ASSIGNED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error assigning manager:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED);
@@ -393,6 +459,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
+      return;
+    }
+
     this.confirmationDialog.show({
       title: APP_MESSAGES.CONFIRMATION.REMOVE_MEMBER_TITLE,
       message: APP_MESSAGES.CONFIRMATION.REMOVE_MEMBER,
@@ -401,14 +472,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'danger'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'remove');
         this.apiService.removeMember(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.success(APP_MESSAGES.SUCCESS.MEMBER_REMOVED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error removing member:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED_REMOVE_MEMBER);
@@ -428,6 +502,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
+      return;
+    }
+
     this.confirmationDialog.show({
       title: APP_MESSAGES.CONFIRMATION.DEMOTE_MANAGER_TITLE,
       message: APP_MESSAGES.CONFIRMATION.DEMOTE_MANAGER,
@@ -436,14 +515,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'warning'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'demote');
         this.apiService.demoteManagerToMember(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.success(APP_MESSAGES.SUCCESS.MANAGER_DEMOTED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error demoting manager:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED);
@@ -463,6 +545,11 @@ export class AdminDashboardComponent implements OnInit {
       return;
     }
 
+    // Prevent multiple clicks
+    if (this.isProcessing(memberId)) {
+      return;
+    }
+
     this.confirmationDialog.show({
       title: APP_MESSAGES.CONFIRMATION.PROMOTE_MANAGER_TITLE,
       message: APP_MESSAGES.CONFIRMATION.PROMOTE_MANAGER,
@@ -471,14 +558,17 @@ export class AdminDashboardComponent implements OnInit {
       type: 'warning'
     }).then((confirmed) => {
       if (confirmed) {
+        this.setProcessing(memberId, 'promote');
         this.apiService.promoteManagerToAdmin(memberId).subscribe({
           next: (response) => {
+            this.clearProcessing(memberId);
             if (response.success) {
               this.toastService.success(APP_MESSAGES.SUCCESS.MANAGER_PROMOTED);
               this.loadData(); // Reload data
             }
           },
           error: (error) => {
+            this.clearProcessing(memberId);
             console.error('Error promoting manager:', error);
             if (error.status === 403) {
               this.toastService.error(APP_MESSAGES.ERROR.PERMISSION_DENIED);
@@ -492,8 +582,25 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   logout(): void {
+    this.showLogoutConfirm = true;
+  }
+
+  confirmLogout(): void {
     this.authService.logout();
     this.router.navigate(['/admin/login']);
+    this.showLogoutConfirm = false;
+  }
+
+  navigateToProfile(): void {
+    this.router.navigate(['/admin/profile']);
+  }
+
+  navigateToResetPassword(): void {
+    this.router.navigate(['/admin/reset-password']);
+  }
+
+  cancelLogout(): void {
+    this.showLogoutConfirm = false;
   }
 
   formatDate(dateString?: string): string {
@@ -515,16 +622,16 @@ export class AdminDashboardComponent implements OnInit {
   
   initializeClubDetailsForm(): void {
     this.clubDetailsForm = this.fb.group({
-      clubName: ['', [Validators.required, Validators.maxLength(255)]],
+      clubName: ['', [Validators.required, Validators.maxLength(30)]],
       establishedYear: ['', [
         Validators.required, 
         Validators.min(1800), 
         this.maxYearValidator()
       ]],
-      description: ['', [Validators.required, Validators.minLength(50)]],
-      email: ['', [Validators.required, Validators.email, Validators.maxLength(255)]],
+      description: ['', [Validators.required, Validators.minLength(50), Validators.maxLength(1000)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
       phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/), Validators.maxLength(10)]],
-      address: ['', [Validators.required]],
+      address: ['', [Validators.required, Validators.maxLength(500)]],
       businessHours: ['', [Validators.required, Validators.maxLength(255)]],
       clubImage: [''],
       clubLogo: ['']
@@ -534,6 +641,19 @@ export class AdminDashboardComponent implements OnInit {
   /**
    * Custom validator to ensure established year is not in the future
    */
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-numeric characters
+    const numericValue = input.value.replace(/[^0-9]/g, '');
+    // Limit to 10 digits
+    const limitedValue = numericValue.slice(0, 10);
+    // Update input value and form control
+    if (input.value !== limitedValue) {
+      input.value = limitedValue;
+      this.clubDetailsForm.patchValue({ phone: limitedValue }, { emitEvent: true });
+    }
+  }
+
   maxYearValidator(): (control: AbstractControl) => ValidationErrors | null {
     return (control: AbstractControl): ValidationErrors | null => {
       if (!control.value) {
@@ -728,13 +848,15 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   onClubImageError(event: Event): void {
-    console.error('Error loading club image:', event);
     const img = event.target as HTMLImageElement;
-    // Try to reload with cache busting
-    if (img.src) {
-      const url = new URL(img.src);
-      url.searchParams.set('t', Date.now().toString());
-      img.src = url.toString();
+    const currentSrc = img.src;
+    // Add cache busting parameter if not already present
+    if (!currentSrc.includes('?t=')) {
+      img.src = currentSrc + '?t=' + new Date().getTime();
+    } else {
+      // If already tried with cache busting, hide the image to prevent infinite retry loop
+      console.warn('Club image failed to load after retry, hiding image:', currentSrc);
+      img.style.display = 'none';
     }
   }
   

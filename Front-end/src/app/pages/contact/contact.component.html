@@ -53,6 +53,7 @@
               class="form-input"
               [class.invalid]="isFieldInvalid('name')"
               [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_FULL_NAME"
+              maxlength="30"
             />
             <div class="error-message" *ngIf="isFieldInvalid('name')">
               {{ getErrorMessage('name') }}
@@ -68,6 +69,7 @@
               class="form-input"
               [class.invalid]="isFieldInvalid('email')"
               [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_EMAIL"
+              maxlength="50"
             />
             <div class="error-message" *ngIf="isFieldInvalid('email')">
               {{ getErrorMessage('email') }}
@@ -84,6 +86,8 @@
               [class.invalid]="isFieldInvalid('phone')"
               [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_PHONE"
               maxlength="10"
+              (input)="onPhoneInput($event)"
+              pattern="[0-9]*"
             />
             <div class="error-message" *ngIf="isFieldInvalid('phone')">
               {{ getErrorMessage('phone') }}
@@ -99,6 +103,7 @@
               class="form-input"
               [class.invalid]="isFieldInvalid('subject')"
               [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_SUBJECT"
+              maxlength="255"
             />
             <div class="error-message" *ngIf="isFieldInvalid('subject')">
               {{ getErrorMessage('subject') }}
@@ -114,6 +119,7 @@
               [class.invalid]="isFieldInvalid('message')"
               rows="6"
               [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_MESSAGE"
+              maxlength="1000"
             ></textarea>
             <div class="error-message" *ngIf="isFieldInvalid('message')">
               {{ getErrorMessage('message') }}

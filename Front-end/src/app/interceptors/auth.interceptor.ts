@@ -15,6 +15,9 @@ export class AuthInterceptor implements HttpInterceptor {
   private readonly publicEndpoints = [
     '/api/login',
     '/api/membership/register',
+    '/api/membership/send-otp',
+    '/api/membership/verify-otp',
+    '/api/membership/resend-otp',
     '/api/members',
     '/api/contact',
     '/api/upload/profile-picture',
@@ -24,9 +27,15 @@ export class AuthInterceptor implements HttpInterceptor {
     '/api/club-images/', // Public - for serving club images
     '/api/profile-pictures/', // Public - for serving profile pictures
     '/api/club-logos/', // Public - for serving club logos
+    '/api/auth/forgot-password',
+    '/api/auth/verify-reset-otp',
+    '/api/auth/reset-password',
     // Also check without /api prefix for flexibility
     '/login',
     '/membership/register',
+    '/membership/send-otp',
+    '/membership/verify-otp',
+    '/membership/resend-otp',
     '/members',
     '/contact',
     '/upload/profile-picture',
@@ -35,7 +44,10 @@ export class AuthInterceptor implements HttpInterceptor {
     '/club-details',
     '/club-images/',
     '/profile-pictures/',
-    '/club-logos/'
+    '/club-logos/',
+    '/auth/forgot-password',
+    '/auth/verify-reset-otp',
+    '/auth/reset-password'
   ];
 
   constructor(private authService: AuthService) {}
@@ -91,10 +103,9 @@ export class AuthInterceptor implements HttpInterceptor {
           token = directToken;
         }
       } catch (e) {
-        console.error('Error accessing localStorage:', e);
+        // Silently handle localStorage access errors
       }
     }
-
 
     // If token exists, add it to the request
     if (token && token.trim() !== '') {
@@ -105,20 +116,11 @@ export class AuthInterceptor implements HttpInterceptor {
         }
       });
       
-      // Verify header was added
-      const addedHeader = clonedRequest.headers.get('Authorization');
-      if (!addedHeader) {
-        console.error('Failed to add Authorization header');
-      }
-      
       return next.handle(clonedRequest);
     }
 
-    // No token for protected endpoint
-    console.error('❌ No token found for protected endpoint:', path);
-    console.error('❌ Token from service:', this.authService.getToken());
-    console.error('❌ Token from localStorage:', localStorage.getItem('uk_club_token'));
-    console.error('❌ Request will fail with 401 - token not in headers');
+    // No token for protected endpoint - let the backend handle the 401 response
+    // Don't log errors here as the backend will return appropriate error response
     return next.handle(request);
   }
 }

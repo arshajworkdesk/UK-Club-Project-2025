@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router } from '@angular/router';
 import { trigger, state, style, transition, animate, query, stagger } from '@angular/animations';
 import { ApiService } from '../../services/api.service';
 import { APP_CONSTANTS } from '../../constants/app.constants';
@@ -63,15 +64,20 @@ export class RegistrationComponent implements OnInit {
   isSubmitting = false;
   showPassword = false;
   showConfirmPassword = false;
-  showSuccessMessage = false;
   errorMessage = '';
   particles: Array<{x: number, y: number, delay: number}> = [];
   selectedFile: File | null = null;
   profilePicturePreview: string | null = null;
   profilePictureError: string = '';
   
+  clubDetails: any = {
+    clubName: APP_CONSTANTS.BRAND_NAME
+  };
+  isLoadingClubDetails = true;
+  
   // Expose constants for template
   readonly APP_MESSAGES = APP_MESSAGES;
+  readonly APP_CONSTANTS = APP_CONSTANTS;
   
   genderOptions = [
     { value: 'male', label: APP_MESSAGES.UI.REGISTRATION.GENDER_OPTIONS.MALE },
@@ -82,12 +88,41 @@ export class RegistrationComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.initializeForm();
     this.generateParticles();
+    this.loadClubDetails();
+  }
+
+  loadClubDetails(): void {
+    this.isLoadingClubDetails = true;
+    this.apiService.getClubDetails().subscribe({
+      next: (details) => {
+        this.clubDetails = {
+          clubName: details.clubName || APP_CONSTANTS.BRAND_NAME
+        };
+        this.isLoadingClubDetails = false;
+      },
+      error: (error) => {
+        // Use default values if API fails
+        this.clubDetails = {
+          clubName: APP_CONSTANTS.BRAND_NAME
+        };
+        this.isLoadingClubDetails = false;
+      }
+    });
+  }
+
+  getRegistrationTitle(): string {
+    return `Join ${this.clubDetails.clubName}`;
+  }
+
+  getRegistrationTitleWords(): string[] {
+    return this.getRegistrationTitle().split(' ');
   }
 
   generateParticles(): void {
@@ -103,10 +138,10 @@ export class RegistrationComponent implements OnInit {
 
   initializeForm(): void {
     this.registrationForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', [Validators.required]],
+      fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100)]],
+      confirmPassword: ['', [Validators.required, Validators.maxLength(100)]],
       dob: ['', [Validators.required]],
       gender: ['', [Validators.required]]
     }, {
@@ -208,39 +243,16 @@ export class RegistrationComponent implements OnInit {
     if (this.registrationForm.valid && !this.isSubmitting && !this.profilePictureError) {
       this.isSubmitting = true;
       
-      // First, upload profile picture if selected
-      if (this.selectedFile) {
-        this.apiService.uploadProfilePicture(this.selectedFile).subscribe({
-          next: (uploadResponse) => {
-            if (uploadResponse.success && uploadResponse.filename) {
-              // File uploaded successfully, save only filename (not full URL)
-              this.registerMember(uploadResponse.filename);
-            } else if (uploadResponse.success && uploadResponse.url) {
-              // Fallback: if URL is provided, extract filename
-              const urlParts = uploadResponse.url.split('/');
-              const filename = urlParts[urlParts.length - 1];
-              this.registerMember(filename);
-            } else {
-              this.isSubmitting = false;
-              this.errorMessage = uploadResponse.message || APP_MESSAGES.FILE_UPLOAD.UPLOAD_FAILED;
-              setTimeout(() => {
-                this.errorMessage = '';
-              }, 5000);
-            }
-          },
-          error: (error) => {
-            console.error('Profile picture upload failed:', error);
-            this.isSubmitting = false;
-            this.errorMessage = error.error?.message || APP_MESSAGES.FILE_UPLOAD.UPLOAD_FAILED;
-            setTimeout(() => {
-              this.errorMessage = '';
-            }, 5000);
-          }
-        });
-      } else {
-        // No profile picture, register directly
-        this.registerMember(null);
+      // Store profile picture preview (base64 data URL) in sessionStorage if available
+      // Will upload only after successful OTP verification
+      if (this.profilePicturePreview && this.selectedFile) {
+        sessionStorage.setItem('profile_picture_data', this.profilePicturePreview);
+        sessionStorage.setItem('profile_picture_filename', this.selectedFile.name);
+        sessionStorage.setItem('profile_picture_type', this.selectedFile.type);
       }
+      
+      // Navigate to OTP page (profile picture will be uploaded after OTP verification)
+      this.prepareAndNavigateToOtp();
     } else {
       // Mark all fields as touched to show validation errors
       Object.keys(this.registrationForm.controls).forEach(key => {
@@ -249,48 +261,70 @@ export class RegistrationComponent implements OnInit {
     }
   }
 
-  private registerMember(profilePictureUrl: string | null): void {
-    // Prepare registration data (matching backend DTO structure)
-    const registrationData: any = {
+  prepareAndNavigateToOtp(): void {
+    const email = this.registrationForm.value.email;
+    if (!email) {
+      this.isSubmitting = false;
+      return;
+    }
+
+    // Store registration data in sessionStorage (without profilePictureUrl - will be added after upload)
+    const registrationData = {
       fullName: this.registrationForm.value.fullName,
-      email: this.registrationForm.value.email,
+      email: email,
       password: this.registrationForm.value.password,
-      dateOfBirth: this.registrationForm.value.dob || null, // Backend expects dateOfBirth
-      gender: this.registrationForm.value.gender || null,
-      profilePictureUrl: profilePictureUrl // Use uploaded file URL
+      dateOfBirth: this.registrationForm.value.dob || null,
+      gender: this.registrationForm.value.gender || null
     };
 
-    // Call API
-    this.apiService.registerMembership(registrationData).subscribe({
+    sessionStorage.setItem('registration_data', JSON.stringify(registrationData));
+    sessionStorage.setItem('registration_email', email);
+
+    // Send OTP and navigate to verification page
+    this.apiService.sendOtp(email).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.showSuccessMessage = true;
-        this.registrationForm.reset();
-        this.removeProfilePicture();
-        // Hide success message after 5 seconds
-        setTimeout(() => {
-          this.showSuccessMessage = false;
-        }, 5000);
+        if (response.success) {
+          // Store OTP sent flag and cooldown
+          sessionStorage.setItem('otp_sent', 'true');
+          if (response.resendAllowedAt) {
+            sessionStorage.setItem('otp_resend_cooldown', response.resendAllowedAt);
+          }
+          
+          // Navigate to OTP verification page
+          this.router.navigate(['/membership/verify-otp'], {
+            queryParams: { email: email }
+          });
+        } else {
+          this.isSubmitting = false;
+          this.errorMessage = response.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED;
+          // Clear stored data on error
+          sessionStorage.removeItem('registration_data');
+          sessionStorage.removeItem('registration_email');
+          sessionStorage.removeItem('profile_picture_data');
+          sessionStorage.removeItem('profile_picture_filename');
+          sessionStorage.removeItem('profile_picture_type');
+          setTimeout(() => {
+            this.errorMessage = '';
+          }, 5000);
+        }
       },
       error: (error) => {
-        console.error('Membership registration failed:', error);
         this.isSubmitting = false;
-        
-        // Extract error message from backend response
-        if (error.error && error.error.message) {
-          this.errorMessage = error.error.message;
-        } else if (error.error && typeof error.error === 'string') {
-          this.errorMessage = error.error;
-        } else {
-          this.errorMessage = APP_MESSAGES.ERROR.REGISTRATION_FAILED;
-        }
-        
+        this.errorMessage = error.error?.message || APP_MESSAGES.ERROR.OTP_SEND_FAILED;
+        // Clear stored data on error
+        sessionStorage.removeItem('registration_data');
+        sessionStorage.removeItem('registration_email');
+        sessionStorage.removeItem('profile_picture_data');
+        sessionStorage.removeItem('profile_picture_filename');
+        sessionStorage.removeItem('profile_picture_type');
         setTimeout(() => {
           this.errorMessage = '';
         }, 5000);
       }
     });
   }
+
 
   getErrorMessage(fieldName: string): string {
     const control = this.registrationForm.get(fieldName);
@@ -306,6 +340,11 @@ export class RegistrationComponent implements OnInit {
     if (control?.hasError('minlength')) {
       const minLength = control.errors?.['minlength']?.requiredLength;
       return APP_MESSAGES.VALIDATION.MIN_LENGTH(this.getFieldLabel(fieldName), minLength);
+    }
+    
+    if (control?.hasError('maxlength')) {
+      const maxLength = control.errors?.['maxlength']?.requiredLength;
+      return APP_MESSAGES.VALIDATION.MAX_LENGTH(this.getFieldLabel(fieldName), maxLength);
     }
     
     if (this.registrationForm.hasError('passwordMismatch') && fieldName === 'confirmPassword') {
@@ -332,8 +371,5 @@ export class RegistrationComponent implements OnInit {
     return !!(control && control.invalid && (control.dirty || control.touched));
   }
 
-  getRegistrationTitleWords(): string[] {
-    return APP_MESSAGES.UI.REGISTRATION.TITLE.split(' ');
-  }
 }
 

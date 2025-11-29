@@ -83,6 +83,11 @@
   outline: none;
   font-family: inherit;
   
+  // Extra padding for password inputs to accommodate eye icon
+  .password-input-wrapper & {
+    padding: 14px 50px 14px 16px;
+  }
+  
   &::placeholder {
     color: var(--text-light);
   }
@@ -109,6 +114,40 @@
 .input-wrapper {
   position: relative;
   width: 100%;
+  
+  &.password-input-wrapper {
+    display: flex;
+    align-items: center;
+  }
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: color var(--duration-normal) var(--ease-in-out);
+  z-index: 10;
+  
+  &:hover:not(:disabled) {
+    color: var(--primary);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .eye-icon {
+    font-size: 1.2rem;
+    line-height: 1;
+  }
 }
 
 .error-message {
@@ -121,6 +160,22 @@
 
 .form-actions {
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.forgot-password-link {
+  text-align: center;
+  color: var(--primary);
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: color var(--duration-normal) var(--ease-in-out);
+  
+  &:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+  }
 }
 
 .submit-button {

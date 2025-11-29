@@ -20,6 +20,7 @@ export class HomeComponent implements OnInit {
     description: '',
     clubImage: null
   };
+  clubImageUrl: string | null = null;
   isLoadingClubDetails = true;
 
   features = APP_MESSAGES.UI.HOME_FEATURES;
@@ -44,10 +45,16 @@ export class HomeComponent implements OnInit {
       next: (details) => {
         this.clubDetails = {
           clubName: details.clubName || APP_CONSTANTS.BRAND_NAME,
-          establishedYear: details.establishedYear || 2020,
+          establishedYear: details.establishedYear || APP_CONSTANTS.DEFAULTS.ESTABLISHED_YEAR,
           description: details.description || '',
           clubImage: details.clubImage || null
         };
+        // Set the resolved image URL
+        if (this.clubDetails.clubImage) {
+          this.clubImageUrl = this.getClubImageUrl(this.clubDetails.clubImage);
+        } else {
+          this.clubImageUrl = null;
+        }
         this.isLoadingClubDetails = false;
         // Update yearsEstablished based on established year
         if (details.establishedYear) {
@@ -60,7 +67,7 @@ export class HomeComponent implements OnInit {
         // Use default values if API fails
         this.clubDetails = {
           clubName: APP_CONSTANTS.BRAND_NAME,
-          establishedYear: 2020,
+          establishedYear: APP_CONSTANTS.DEFAULTS.ESTABLISHED_YEAR,
           description: `${APP_CONSTANTS.BRAND_NAME} is a prestigious community organization dedicated to bringing together like-minded individuals from across the United Kingdom. Since our establishment, we have been committed to fostering connections, organizing exclusive events, and providing our members with unparalleled opportunities for growth and networking. Our mission is to create a vibrant ecosystem where members can thrive, share experiences, and build lasting relationships. Whether you're looking to expand your professional network, participate in exciting events, or simply be part of an exclusive community, ${APP_CONSTANTS.BRAND_NAME} is the place for you.`
         };
         this.clubStats.yearsEstablished = 5;
@@ -91,16 +98,16 @@ export class HomeComponent implements OnInit {
 
   /**
    * Get club image URL using API service
-   * @param imageNameOrUrl The filename, Cloudinary public ID, or full URL stored in database
+   * @param imageNameOrUrl The Supabase Storage path (bucket/filename) or full Supabase URL from backend
    * @returns Full URL to access the club image
    */
   getClubImageUrl(imageNameOrUrl: string | null | undefined): string | null {
     if (!imageNameOrUrl) return null;
-    // If it's already a full URL (Cloudinary), return as-is
+    // If it's already a full URL (Supabase Storage), return as-is
     if (imageNameOrUrl.startsWith('http://') || imageNameOrUrl.startsWith('https://')) {
       return imageNameOrUrl;
     }
-    // Otherwise, use API service to construct URL (for backward compatibility)
+    // Otherwise, use API service (backend should normally return full URLs)
     return this.apiService.getClubImageUrl(imageNameOrUrl);
   }
 
@@ -109,10 +116,8 @@ export class HomeComponent implements OnInit {
    * @param event Error event from image element
    */
   onClubImageError(event: Event): void {
-    console.error('Error loading club image:', event);
-    const img = event.target as HTMLImageElement;
-    // If the image fails to load, set clubImage to null to show placeholder
-    this.clubDetails.clubImage = null;
+    // If the image fails to load, clear the URL to show placeholder
+    this.clubImageUrl = null;
   }
 }
 

@@ -7,6 +7,7 @@
           [src]="clubLogo" 
           [alt]="getClubLogoAlt()"
           class="brand-logo"
+          crossorigin="anonymous"
           (error)="clubLogo = null"
         />
         <span class="brand-text">{{ clubName }}</span>
@@ -44,4 +45,18 @@
     </ul>
   </div>
 </nav>
+
+<!-- Logout Confirmation Modal -->
+<div class="logout-modal-backdrop" *ngIf="showLogoutConfirm">
+  <div class="logout-modal">
+    <h3 class="logout-modal-title">{{ APP_MESSAGES.UI.LOGOUT }}</h3>
+    <p class="logout-modal-message">
+      Are you sure you want to logout?
+    </p>
+    <div class="logout-modal-actions">
+      <button type="button" class="btn-secondary" (click)="cancelLogout()">Cancel</button>
+      <button type="button" class="btn-primary" (click)="confirmLogout()">Logout</button>
+    </div>
+  </div>
+</div>
 

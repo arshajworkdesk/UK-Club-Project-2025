@@ -16,6 +16,7 @@ export class NavigationComponent implements OnInit {
   isScrolled = false;
   isAuthenticated = false;
   isOnDashboard = false;
+  showLogoutConfirm = false;
   clubName: string = APP_CONSTANTS.BRAND_NAME;
   clubLogo: string | null = null;
 
@@ -82,7 +83,7 @@ export class NavigationComponent implements OnInit {
       },
       error: (error) => {
         if (error?.status !== 404) {
-          console.error('Error loading club name:', error);
+        console.error('Error loading club name:', error);
         }
         // Keep default BRAND_NAME
       }
@@ -103,9 +104,19 @@ export class NavigationComponent implements OnInit {
   }
 
   logout(): void {
+    // Open confirmation modal instead of logging out immediately
+    this.showLogoutConfirm = true;
+  }
+
+  confirmLogout(): void {
     this.authService.logout();
     this.router.navigate(['/']);
     this.closeMenu();
+    this.showLogoutConfirm = false;
+  }
+
+  cancelLogout(): void {
+    this.showLogoutConfirm = false;
   }
 
   getClubLogoAlt(): string {

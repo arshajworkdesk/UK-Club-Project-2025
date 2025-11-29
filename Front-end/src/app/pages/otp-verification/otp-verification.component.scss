@@ -1,0 +1,347 @@
+@import '../../../styles.scss';
+
+/* Background image path - relative to component location */
+$bg-image-path-relative: '../../../assets/images/appBackground.jpg';
+
+.otp-verification-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px 40px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Modern Background */
+.modern-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(14, 165, 233, 0.06) 0%, transparent 50%);
+  opacity: 0.8;
+}
+
+.bg-image-overlay {
+  display: none;
+}
+
+.glass-card {
+  width: 100%;
+  max-width: 480px;
+  background-image: 
+    linear-gradient(135deg, var(--bg-card) 0%, var(--bg-overlay) 100%),
+    url($bg-image-path-relative);
+  background-size: cover, cover;
+  background-position: center center, center center;
+  background-repeat: no-repeat, no-repeat;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: var(--shadow-xl);
+  position: relative;
+  z-index: 10;
+  transition: all var(--duration-slow) var(--ease-smooth);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.75) 0%, rgba(15, 23, 42, 0.85) 100%);
+    z-index: 0;
+    border-radius: 16px;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  color: var(--primary-light);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  font-weight: 400;
+  margin-top: 8px;
+}
+
+.otp-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.otp-header {
+  text-align: center;
+}
+
+.otp-instruction {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 8px 0;
+}
+
+.otp-email {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+
+  strong {
+    color: var(--primary);
+  }
+}
+
+.otp-input-group {
+  position: relative;
+}
+
+.otp-input {
+  width: 100%;
+  padding: 16px;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 8px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  background: var(--bg-overlay);
+  border: 2px solid var(--border-medium);
+  border-radius: 8px;
+  color: var(--text-primary);
+  transition: all var(--duration-normal) var(--ease-in-out);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &.invalid {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+
+  &::placeholder {
+    color: var(--text-tertiary);
+    letter-spacing: 8px;
+  }
+}
+
+.otp-label {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  padding: 0 4px;
+}
+
+.otp-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.otp-verify-button,
+.otp-resend-button {
+  flex: 1;
+  padding: 12px 20px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-in-out);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.otp-verify-button {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: var(--text-white);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.otp-resend-button {
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  border: 2px solid var(--border-medium);
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.otp-attempts {
+  text-align: center;
+}
+
+.attempts-text {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.back-link {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all var(--duration-normal) var(--ease-in-out);
+
+  &:hover:not(:disabled) {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateX(-4px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.success-message {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%);
+  border: 2px solid var(--success);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  color: var(--success);
+  font-weight: 500;
+  margin-top: 16px;
+}
+
+.redirect-message {
+  font-size: 0.875rem;
+  margin: 8px 0 0 0;
+  opacity: 0.8;
+}
+
+.error-message {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.05) 100%);
+  border: 2px solid var(--error);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  color: var(--error);
+  font-weight: 500;
+  margin-top: 16px;
+}
+
+.button-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 767px) {
+  .otp-verification-container {
+    padding: 80px 16px 32px;
+  }
+
+  .glass-card {
+    padding: 32px 24px;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .otp-input {
+    font-size: 1.5rem;
+    letter-spacing: 6px;
+    padding: 14px;
+  }
+
+  .otp-actions {
+    flex-direction: column;
+  }
+
+  .otp-verify-button,
+  .otp-resend-button {
+    width: 100%;
+  }
+}
+

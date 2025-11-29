@@ -68,12 +68,25 @@ export class ContactComponent implements OnInit {
 
   initializeForm(): void {
     this.contactForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
+      email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
       phone: ['', [Validators.required, Validators.pattern(/^\d{10}$/), Validators.maxLength(10)]],
-      subject: ['', [Validators.required]],
-      message: ['', [Validators.required, Validators.minLength(10)]]
+      subject: ['', [Validators.required, Validators.maxLength(255)]],
+      message: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]]
     });
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-numeric characters
+    const numericValue = input.value.replace(/[^0-9]/g, '');
+    // Limit to 10 digits
+    const limitedValue = numericValue.slice(0, 10);
+    // Update input value and form control
+    if (input.value !== limitedValue) {
+      input.value = limitedValue;
+      this.contactForm.patchValue({ phone: limitedValue }, { emitEvent: true });
+    }
   }
 
   get name() {
@@ -149,8 +162,9 @@ export class ContactComponent implements OnInit {
       return APP_MESSAGES.VALIDATION.MIN_LENGTH(this.getFieldLabel(fieldName), minLength);
     }
     
-    if (control?.hasError('maxlength') && fieldName === 'phone') {
-      return APP_MESSAGES.VALIDATION.INVALID_PHONE;
+    if (control?.hasError('maxlength')) {
+      const maxLength = control.errors?.['maxlength']?.requiredLength;
+      return APP_MESSAGES.VALIDATION.MAX_LENGTH(this.getFieldLabel(fieldName), maxLength);
     }
     
     return '';

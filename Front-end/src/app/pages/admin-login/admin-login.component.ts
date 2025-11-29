@@ -15,6 +15,7 @@ export class AdminLoginComponent implements OnInit {
   loginForm!: FormGroup;
   isSubmitting = false;
   errorMessage = '';
+  showPassword = false;
 
   // Expose constants for template
   readonly APP_MESSAGES = APP_MESSAGES;
@@ -56,6 +57,9 @@ export class AdminLoginComponent implements OnInit {
     if (this.loginForm.valid && !this.isSubmitting) {
       this.isSubmitting = true;
       this.errorMessage = '';
+      
+      // Disable form controls during submission
+      this.loginForm.disable();
 
       const { email, password } = this.loginForm.value;
 
@@ -67,12 +71,14 @@ export class AdminLoginComponent implements OnInit {
           } else {
             this.errorMessage = response.message || APP_MESSAGES.ERROR.LOGIN_FAILED;
             this.isSubmitting = false;
+            this.loginForm.enable(); // Re-enable form on error
           }
         },
         error: (error) => {
           console.error('Login error:', error);
           this.errorMessage = APP_MESSAGES.ERROR.LOGIN_ERROR;
           this.isSubmitting = false;
+          this.loginForm.enable(); // Re-enable form on error
         }
       });
     } else {
@@ -112,6 +118,10 @@ export class AdminLoginComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.loginForm.get(fieldName);
     return !!(control && control.invalid && (control.dirty || control.touched));
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 }
 

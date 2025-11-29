@@ -23,15 +23,27 @@
 
       <div class="form-group">
         <label for="password" class="form-label">{{ APP_MESSAGES.FORM_LABELS.PASSWORD }}</label>
-        <div class="input-wrapper">
+        <div class="input-wrapper password-input-wrapper">
           <input
-            type="password"
+            [type]="showPassword ? 'text' : 'password'"
             id="password"
             formControlName="password"
             class="form-input"
             [class.invalid]="isFieldInvalid('password')"
             [placeholder]="APP_MESSAGES.UI.PLACEHOLDER_ENTER_PASSWORD"
+            autocomplete="current-password"
           />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [disabled]="isSubmitting"
+            tabindex="-1"
+            aria-label="Toggle password visibility"
+          >
+            <span *ngIf="!showPassword" class="eye-icon">👁️</span>
+            <span *ngIf="showPassword" class="eye-icon">👁️‍🗨️</span>
+          </button>
         </div>
         <div class="error-message" *ngIf="isFieldInvalid('password')">
           {{ getErrorMessage('password') }}
@@ -55,6 +67,9 @@
             {{ APP_MESSAGES.UI.LOGGING_IN }}
           </span>
         </button>
+        <a routerLink="/admin/forgot-password" class="forgot-password-link">
+          {{ APP_MESSAGES.UI.FORGOT_PASSWORD }}
+        </a>
       </div>
     </form>
   </div>
