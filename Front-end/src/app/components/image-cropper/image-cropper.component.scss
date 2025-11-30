@@ -1,0 +1,622 @@
+@import '../../../styles.scss';
+
+.cropper-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-start; // Changed from center to flex-start
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-out;
+  padding: 20px; // Add padding to ensure modal doesn't touch edges
+  overflow-y: auto; // Allow scrolling if modal is too tall
+}
+
+.cropper-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: calc(100vh - 40px); // Account for backdrop padding
+  margin-top: 20px; // Add top margin to ensure header is visible
+  margin-bottom: 20px; // Add bottom margin
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.3s ease-out;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+.cropper-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid var(--border-light);
+  
+  h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+  }
+}
+
+.cropper-content {
+  padding: 24px;
+  overflow-y: auto;
+  overflow-x: visible; // Allow horizontal overflow for full preview
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--bg-overlay);
+  min-height: 500px; // Ensure enough space
+}
+
+.cropper-wrapper-dark {
+  width: 100%;
+  background: var(--bg-overlay);
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 450px;
+  position: relative;
+  overflow: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  image-cropper {
+    width: 100%;
+    max-width: 100%;
+    background: transparent !important;
+    border-radius: 8px;
+    min-height: 450px;
+    
+    // Ensure cropper container shows full image
+    ::ng-deep {
+      .cropper-container {
+        width: 100% !important;
+        height: auto !important;
+        min-height: 450px !important;
+      }
+      
+      .cropper-wrapper {
+        width: 100% !important;
+        height: auto !important;
+      }
+      
+      .cropper-canvas-container {
+        width: 100% !important;
+        height: auto !important;
+      }
+    }
+    min-height: 400px;
+    display: block;
+    
+    // Override ngx-image-cropper default white backgrounds - extremely aggressive
+    ::ng-deep {
+      // Target EVERYTHING - nuclear option
+      * {
+        &[style*="background"] {
+          background: var(--bg-overlay) !important;
+          background-color: var(--bg-overlay) !important;
+        }
+      }
+      
+      // Target the root container and all children
+      > * {
+        background: var(--bg-overlay) !important;
+        background-color: var(--bg-overlay) !important;
+      }
+      
+      .cropper-container {
+        background: var(--bg-overlay) !important;
+        background-color: var(--bg-overlay) !important;
+        border-radius: 8px;
+        padding: 0 !important;
+        margin: 0 !important;
+        
+        // Force dark background on all children
+        * {
+          background-color: var(--bg-overlay) !important;
+        }
+      }
+      
+      .cropper-wrapper {
+        background: var(--bg-overlay) !important;
+        background-color: var(--bg-overlay) !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      
+      .cropper-canvas-container {
+        background: var(--bg-overlay) !important;
+        background-color: var(--bg-overlay) !important;
+      }
+      
+      .cropper-image-container {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+      
+      .cropper-canvas {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+      
+      .cropper-view-box {
+        outline: 2px dashed var(--accent-primary) !important;
+        outline-offset: -2px;
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+      
+      .cropper-face {
+        background-color: transparent !important;
+        background: transparent !important;
+      }
+      
+      .cropper-line {
+        background-color: var(--accent-primary) !important;
+        opacity: 0.3;
+      }
+      
+      .cropper-point {
+        background-color: var(--accent-primary) !important;
+        opacity: 0.8;
+        
+        &:hover {
+          background-color: var(--accent-primary) !important;
+          opacity: 1;
+        }
+      }
+      
+      .cropper-drag-box {
+        background-color: rgba(59, 130, 246, 0.1) !important;
+      }
+      
+      // Target ALL nested divs that might have white background
+      .cropper-container > div,
+      .cropper-wrapper > div,
+      .cropper-canvas-container > div,
+      .cropper-container > *,
+      .cropper-wrapper > *,
+      .cropper-canvas-container > *,
+      div[class*="cropper"] {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+      
+      // Remove any white backgrounds from canvas elements
+      canvas {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+      
+      // Nuclear option - override ALL white backgrounds
+      div {
+        &[style*="background-color: white"],
+        &[style*="background-color:#fff"],
+        &[style*="background-color:#ffffff"],
+        &[style*="background-color:white"],
+        &[style*="background: white"],
+        &[style*="background:#fff"],
+        &[style*="background:#ffffff"],
+        &[style*="background:white"] {
+          background: var(--bg-overlay) !important;
+          background-color: var(--bg-overlay) !important;
+        }
+      }
+      
+      // Force dark background on any element with class containing 'cropper'
+      [class*="cropper"] {
+        background-color: var(--bg-overlay) !important;
+      }
+      
+      // Target canvas specifically - this is often the culprit
+      canvas {
+        background: var(--bg-overlay) !important;
+        background-color: var(--bg-overlay) !important;
+      }
+      
+      // Override any inline styles that might set white
+      [style] {
+        &[style*="white"],
+        &[style*="#fff"],
+        &[style*="#ffffff"] {
+          background: var(--bg-overlay) !important;
+          background-color: var(--bg-overlay) !important;
+        }
+      }
+    }
+  }
+}
+
+.cropper-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-overlay);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  
+  .control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-right: 4px;
+    }
+  }
+  
+  .control-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-medium);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    
+    span {
+      display: inline-block;
+      font-size: 18px;
+      line-height: 1;
+    }
+    
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      transform: translateY(-1px);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+    
+    &.active {
+      background: var(--accent-primary);
+      border-color: var(--accent-primary);
+      color: white;
+    }
+    
+    &.reset-btn {
+      margin-left: auto;
+      font-size: 14px;
+      padding: 8px 16px;
+      
+      span {
+        font-size: 14px;
+      }
+    }
+  }
+  
+  .control-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 50px;
+    text-align: center;
+  }
+}
+
+.cropper-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-height: 140px; // Ensure space is reserved even when no preview
+  
+  .preview-label {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .preview-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--border-medium);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-overlay);
+    position: relative;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .preview-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-align: center;
+      padding: 10px;
+      line-height: 1.4;
+    }
+  }
+}
+
+.cropper-actions {
+  display: flex;
+  gap: 12px;
+  padding: 24px;
+  border-top: 1px solid var(--border-light);
+  justify-content: flex-end;
+  
+  .btn-primary,
+  .btn-secondary {
+    min-width: 120px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  .btn-primary {
+    background: var(--accent-primary);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: var(--accent-primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+  }
+  
+  .btn-secondary {
+    background: var(--bg-overlay);
+    color: var(--text-primary);
+    border: 1px solid var(--border-medium);
+    
+    &:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-medium);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .cropper-modal-backdrop {
+    padding: 10px;
+  }
+  
+  .cropper-modal {
+    width: 95%;
+    max-width: 95%;
+    max-height: calc(100vh - 20px);
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .cropper-header {
+    padding: 16px;
+    
+    h3 {
+      font-size: 18px;
+    }
+  }
+  
+  .cropper-content {
+    padding: 16px;
+    gap: 16px;
+    min-height: auto;
+  }
+  
+  .cropper-controls {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    
+    .control-group {
+      width: 100%;
+      justify-content: space-between;
+      
+      label {
+        font-size: 13px;
+      }
+    }
+    
+    .control-btn {
+      min-width: 40px;
+      height: 36px;
+      font-size: 14px;
+      
+      span {
+        font-size: 16px;
+      }
+    }
+    
+    .reset-btn {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+  
+  .cropper-wrapper-dark {
+    padding: 12px;
+    min-height: 300px;
+    
+    image-cropper {
+      min-height: 300px;
+      
+      ::ng-deep {
+        .cropper-container {
+          min-height: 300px !important;
+        }
+      }
+    }
+  }
+  
+  .cropper-preview {
+    .preview-circle {
+      width: 100px;
+      height: 100px;
+    }
+  }
+  
+  .cropper-actions {
+    flex-direction: column-reverse;
+    padding: 16px;
+    gap: 10px;
+    
+    .btn-primary,
+    .btn-secondary {
+      width: 100%;
+      min-width: auto;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .cropper-modal-backdrop {
+    padding: 5px;
+  }
+  
+  .cropper-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - 10px);
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-radius: 12px;
+  }
+  
+  .cropper-header {
+    padding: 12px;
+    
+    h3 {
+      font-size: 16px;
+    }
+  }
+  
+  .cropper-content {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .cropper-controls {
+    padding: 10px;
+    gap: 10px;
+    
+    .control-group {
+      flex-wrap: wrap;
+      
+      label {
+        width: 100%;
+        margin-bottom: 4px;
+      }
+    }
+  }
+  
+  .cropper-wrapper-dark {
+    padding: 8px;
+    min-height: 250px;
+    
+    image-cropper {
+      min-height: 250px;
+      
+      ::ng-deep {
+        .cropper-container {
+          min-height: 250px !important;
+        }
+      }
+    }
+  }
+  
+  .cropper-preview {
+    .preview-circle {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .preview-label {
+      font-size: 12px;
+    }
+  }
+  
+  .cropper-actions {
+    padding: 12px;
+  }
+}
+

@@ -28,6 +28,8 @@ export class ProfileEditComponent implements OnInit {
   profilePicturePreview: string | null = null;
   currentProfilePictureUrl: string | null = null;
   userProfile: any = null;
+  showCropper = false;
+  fileForCropping: File | null = null;
   
   readonly APP_MESSAGES = APP_MESSAGES;
   
@@ -125,14 +127,35 @@ export class ProfileEditComponent implements OnInit {
         return;
       }
       
-      this.selectedFile = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.profilePicturePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      // Store file for cropping and open cropper
+      this.fileForCropping = file;
+      this.showCropper = true;
+    }
+  }
+
+  onImageCropped(event: { file: File; base64: string }): void {
+    console.log('Profile Edit: Image cropped event received:', event);
+    if (event && event.file && event.base64) {
+      this.selectedFile = event.file;
+      this.profilePicturePreview = event.base64;
+      this.showCropper = false;
+      this.fileForCropping = null;
+      // Force change detection
+      setTimeout(() => {
+        console.log('Profile Edit: Preview updated, file:', this.selectedFile?.name, 'preview length:', this.profilePicturePreview?.length);
+      }, 0);
+    } else {
+      console.error('Profile Edit: Invalid cropped image event:', event);
+    }
+  }
+
+  onCropperCancel(): void {
+    this.showCropper = false;
+    this.fileForCropping = null;
+    // Reset file input
+    const fileInput = document.getElementById('profilePictureInput') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
 

@@ -20,6 +20,8 @@ import { ResetPasswordComponent } from './pages/reset-password/reset-password.co
 import { ProfileEditComponent } from './pages/profile-edit/profile-edit.component';
 import { ToastComponent } from './components/toast/toast.component';
 import { ConfirmationDialogComponent } from './components/confirmation-dialog/confirmation-dialog.component';
+import { ImageCropperComponent } from './components/image-cropper/image-cropper.component';
+import { ImageCropperComponent as NgxImageCropperComponent } from 'ngx-image-cropper';
 import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
@@ -46,7 +48,8 @@ import { AuthInterceptor } from './interceptors/auth.interceptor';
     AppRoutingModule,
     ReactiveFormsModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    ImageCropperComponent
   ],
   providers: [
     {

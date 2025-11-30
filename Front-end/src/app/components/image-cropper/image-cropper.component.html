@@ -1,0 +1,96 @@
+<div class="cropper-modal-backdrop" (click)="onCancel()">
+  <div class="cropper-modal" (click)="$event.stopPropagation()">
+    <div class="cropper-header">
+      <h3>Adjust Profile Picture</h3>
+      <button type="button" class="close-button" (click)="onCancel()" aria-label="Close">
+        ×
+      </button>
+    </div>
+    
+    <div class="cropper-content" *ngIf="showCropper">
+      <!-- Image Controls -->
+      <div class="cropper-controls">
+        <div class="control-group">
+          <label>Zoom:</label>
+          <button type="button" class="control-btn" (click)="zoomOut()" title="Zoom Out">
+            <span>−</span>
+          </button>
+          <span class="control-value">{{ (scale * 100).toFixed(0) }}%</span>
+          <button type="button" class="control-btn" (click)="zoomIn()" title="Zoom In">
+            <span>+</span>
+          </button>
+        </div>
+        
+        <div class="control-group">
+          <label>Rotate:</label>
+          <button type="button" class="control-btn" (click)="rotateLeft()" title="Rotate Left">
+            <span>↺</span>
+          </button>
+          <button type="button" class="control-btn" (click)="rotateRight()" title="Rotate Right">
+            <span>↻</span>
+          </button>
+        </div>
+        
+        <div class="control-group">
+          <label>Flip:</label>
+          <button type="button" class="control-btn" (click)="flipH()" [class.active]="flipHorizontal" title="Flip Horizontal">
+            <span>⇄</span>
+          </button>
+          <button type="button" class="control-btn" (click)="flipV()" [class.active]="flipVertical" title="Flip Vertical">
+            <span>⇅</span>
+          </button>
+        </div>
+        
+        <button type="button" class="control-btn reset-btn" (click)="resetTransform()" title="Reset">
+          <span>↻ Reset</span>
+        </button>
+      </div>
+
+      <div class="cropper-wrapper-dark">
+        <image-cropper
+          #imageCropper
+          [imageFile]="fileToCrop"
+          [imageBase64]="base64ToCrop"
+          [aspectRatio]="1"
+          [roundCropper]="true"
+          [resizeToWidth]="400"
+          [cropperMinWidth]="100"
+          [onlyScaleDown]="true"
+          [maintainAspectRatio]="true"
+          [transform]="transform"
+          [autoCrop]="true"
+          [backgroundColor]="'rgba(15, 23, 42, 0.95)'"
+          (imageCropped)="imageCroppedEvent($event)"
+          (imageLoaded)="imageLoaded()"
+          (cropperReady)="cropperReady()"
+        ></image-cropper>
+      </div>
+      
+      <div class="cropper-preview" *ngIf="croppedImage || showCropper">
+        <p class="preview-label">Preview:</p>
+        <div class="preview-circle">
+          <img *ngIf="croppedImage" [src]="croppedImage" alt="Cropped preview" />
+          <div *ngIf="!croppedImage" class="preview-placeholder">
+            <span>Adjust image to see preview</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="cropper-actions">
+      <button type="button" class="btn-secondary" (click)="onCancel()">
+        Cancel
+      </button>
+      <button 
+        type="button" 
+        class="btn-primary" 
+        (click)="onCrop()"
+        [disabled]="!showCropper || isProcessing"
+      >
+        <span *ngIf="!isProcessing">Use This Picture</span>
+        <span *ngIf="isProcessing">Processing...</span>
+      </button>
+    </div>
+  </div>
+</div>
+

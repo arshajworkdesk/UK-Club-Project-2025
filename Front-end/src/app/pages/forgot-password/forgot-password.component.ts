@@ -5,6 +5,7 @@ import { ToastService } from '../../services/toast.service';
 import { APP_MESSAGES } from '../../constants/app.messages';
 import { trigger, transition, animate, style } from '@angular/animations';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { strongPasswordValidator } from '../../validators/password.validator';
 
 @Component({
   selector: 'app-forgot-password',
@@ -66,7 +67,7 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
     });
     
     this.passwordForm = this.fb.group({
-      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100), strongPasswordValidator()]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
@@ -94,6 +95,12 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
   passwordMatchValidator(form: FormGroup) {
     const newPassword = form.get('newPassword')?.value;
     const confirmPassword = form.get('confirmPassword')?.value;
+    
+    // Don't validate if either field is empty (let required validator handle that)
+    if (!newPassword || !confirmPassword) {
+      return null;
+    }
+    
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
@@ -160,7 +167,10 @@ export class ForgotPasswordComponent implements OnInit, OnDestroy {
 
   onPasswordSubmit(): void {
     if (this.passwordForm.invalid) {
-      if (this.passwordForm.hasError('passwordMismatch')) {
+      const newPasswordControl = this.passwordForm.get('newPassword');
+      if (newPasswordControl?.hasError('weakPassword')) {
+        this.toastService.error(APP_MESSAGES.VALIDATION.PASSWORD_WEAK, 4000);
+      } else if (this.passwordForm.hasError('passwordMismatch')) {
         this.toastService.error(APP_MESSAGES.VALIDATION.PASSWORD_MISMATCH, 4000);
       } else {
         this.toastService.error(APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.NEW_PASSWORD), 4000);
