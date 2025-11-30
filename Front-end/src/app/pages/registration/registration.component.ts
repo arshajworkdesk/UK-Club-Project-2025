@@ -5,6 +5,7 @@ import { trigger, state, style, transition, animate, query, stagger } from '@ang
 import { ApiService } from '../../services/api.service';
 import { APP_CONSTANTS } from '../../constants/app.constants';
 import { APP_MESSAGES } from '../../constants/app.messages';
+import { strongPasswordValidator } from '../../validators/password.validator';
 
 @Component({
   selector: 'app-registration',
@@ -69,6 +70,8 @@ export class RegistrationComponent implements OnInit {
   selectedFile: File | null = null;
   profilePicturePreview: string | null = null;
   profilePictureError: string = '';
+  showCropper = false;
+  fileForCropping: File | null = null;
   
   clubDetails: any = {
     clubName: APP_CONSTANTS.BRAND_NAME
@@ -140,7 +143,7 @@ export class RegistrationComponent implements OnInit {
     this.registrationForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
       email: ['', [Validators.required, Validators.email, Validators.maxLength(50)]],
-      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100), strongPasswordValidator()]],
       confirmPassword: ['', [Validators.required, Validators.maxLength(100)]],
       dob: ['', [Validators.required]],
       gender: ['', [Validators.required]]
@@ -217,15 +220,35 @@ export class RegistrationComponent implements OnInit {
       return;
     }
 
-    // Store the file
-    this.selectedFile = file;
+    // Store file for cropping and open cropper
+    this.fileForCropping = file;
+    this.showCropper = true;
+  }
 
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      this.profilePicturePreview = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+  onImageCropped(event: { file: File; base64: string }): void {
+    console.log('Registration: Image cropped event received:', event);
+    if (event && event.file && event.base64) {
+      this.selectedFile = event.file;
+      this.profilePicturePreview = event.base64;
+      this.showCropper = false;
+      this.fileForCropping = null;
+      // Force change detection
+      setTimeout(() => {
+        console.log('Registration: Preview updated, file:', this.selectedFile?.name, 'preview length:', this.profilePicturePreview?.length);
+      }, 0);
+    } else {
+      console.error('Registration: Invalid cropped image event:', event);
+    }
+  }
+
+  onCropperCancel(): void {
+    this.showCropper = false;
+    this.fileForCropping = null;
+    // Reset file input
+    const fileInput = document.getElementById('profilePicture') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
   }
 
   removeProfilePicture(): void {
@@ -335,6 +358,10 @@ export class RegistrationComponent implements OnInit {
     
     if (control?.hasError('email')) {
       return APP_MESSAGES.VALIDATION.INVALID_EMAIL;
+    }
+    
+    if (control?.hasError('weakPassword')) {
+      return APP_MESSAGES.VALIDATION.PASSWORD_WEAK;
     }
     
     if (control?.hasError('minlength')) {

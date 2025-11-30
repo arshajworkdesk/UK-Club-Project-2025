@@ -63,6 +63,12 @@ export class AdminDashboardComponent implements OnInit {
   clubImagePreview: string | null = null;
   selectedClubLogo: File | null = null;
   clubLogoPreview: string | null = null;
+  
+  // Cropper states for club images
+  showClubImageCropper = false;
+  fileForClubImageCropping: File | null = null;
+  showClubLogoCropper = false;
+  fileForClubLogoCropping: File | null = null;
 
   // Expose constants for template
   readonly APP_MESSAGES = APP_MESSAGES;
@@ -763,16 +769,28 @@ export class AdminDashboardComponent implements OnInit {
         return;
       }
       
-      this.selectedClubImage = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.clubImagePreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
-      
-      // Note: We don't update the form yet - the filename will be set after upload
+      // Store file for cropping and open cropper
+      this.fileForClubImageCropping = file;
+      this.showClubImageCropper = true;
+    }
+  }
+
+  onClubImageCropped(event: { file: File; base64: string }): void {
+    if (event && event.file && event.base64) {
+      this.selectedClubImage = event.file;
+      this.clubImagePreview = event.base64;
+      this.showClubImageCropper = false;
+      this.fileForClubImageCropping = null;
+    }
+  }
+
+  onClubImageCropperCancel(): void {
+    this.showClubImageCropper = false;
+    this.fileForClubImageCropping = null;
+    // Reset file input
+    const fileInput = document.getElementById('clubImage') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
   
@@ -809,14 +827,28 @@ export class AdminDashboardComponent implements OnInit {
         return;
       }
       
-      this.selectedClubLogo = file;
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.clubLogoPreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      // Store file for cropping and open cropper
+      this.fileForClubLogoCropping = file;
+      this.showClubLogoCropper = true;
+    }
+  }
+
+  onClubLogoCropped(event: { file: File; base64: string }): void {
+    if (event && event.file && event.base64) {
+      this.selectedClubLogo = event.file;
+      this.clubLogoPreview = event.base64;
+      this.showClubLogoCropper = false;
+      this.fileForClubLogoCropping = null;
+    }
+  }
+
+  onClubLogoCropperCancel(): void {
+    this.showClubLogoCropper = false;
+    this.fileForClubLogoCropping = null;
+    // Reset file input
+    const fileInput = document.getElementById('clubLogo') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
 

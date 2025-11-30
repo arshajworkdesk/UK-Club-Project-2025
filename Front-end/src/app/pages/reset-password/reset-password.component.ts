@@ -6,6 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
 import { APP_MESSAGES } from '../../constants/app.messages';
 import { trigger, transition, animate, style } from '@angular/animations';
+import { strongPasswordValidator } from '../../validators/password.validator';
 
 @Component({
   selector: 'app-reset-password',
@@ -38,7 +39,7 @@ export class ResetPasswordComponent implements OnInit {
   ) {
     this.passwordForm = this.fb.group({
       oldPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(100), strongPasswordValidator()]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
   }
@@ -51,11 +52,15 @@ export class ResetPasswordComponent implements OnInit {
     }
     
     // Explicitly reset form to prevent any autofill
+    // Use reset with emitEvent: false to prevent validation from triggering
     this.passwordForm.reset({
       oldPassword: '',
       newPassword: '',
       confirmPassword: ''
-    });
+    }, { emitEvent: false });
+    
+    // Mark all fields as untouched to prevent showing errors initially
+    this.passwordForm.markAsUntouched();
     
     // Additional prevention: Clear form multiple times to override browser autofill
     setTimeout(() => {
@@ -63,7 +68,7 @@ export class ResetPasswordComponent implements OnInit {
         oldPassword: '',
         newPassword: '',
         confirmPassword: ''
-      });
+      }, { emitEvent: false });
     }, 100);
     
     setTimeout(() => {
@@ -71,7 +76,7 @@ export class ResetPasswordComponent implements OnInit {
         oldPassword: '',
         newPassword: '',
         confirmPassword: ''
-      });
+      }, { emitEvent: false });
     }, 500);
   }
   
@@ -107,12 +112,21 @@ export class ResetPasswordComponent implements OnInit {
   passwordMatchValidator(form: FormGroup) {
     const newPassword = form.get('newPassword')?.value;
     const confirmPassword = form.get('confirmPassword')?.value;
+    
+    // Don't validate if either field is empty (let required validator handle that)
+    if (!newPassword || !confirmPassword) {
+      return null;
+    }
+    
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
   }
 
   onSubmit(): void {
     if (this.passwordForm.invalid) {
-      if (this.passwordForm.hasError('passwordMismatch')) {
+      const newPasswordControl = this.passwordForm.get('newPassword');
+      if (newPasswordControl?.hasError('weakPassword')) {
+        this.toastService.error(APP_MESSAGES.VALIDATION.PASSWORD_WEAK, 4000);
+      } else if (this.passwordForm.hasError('passwordMismatch')) {
         this.toastService.error(APP_MESSAGES.VALIDATION.PASSWORD_MISMATCH, 4000);
       } else {
         this.toastService.error(APP_MESSAGES.VALIDATION.REQUIRED(APP_MESSAGES.FORM_LABELS.PASSWORD), 4000);

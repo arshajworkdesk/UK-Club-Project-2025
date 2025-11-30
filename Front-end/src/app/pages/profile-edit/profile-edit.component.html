@@ -148,5 +148,13 @@
       </div>
     </form>
   </div>
+
+  <!-- Image Cropper Modal -->
+  <app-image-cropper
+    *ngIf="showCropper && fileForCropping"
+    [imageFile]="fileForCropping"
+    (imageCropped)="onImageCropped($event)"
+    (cancel)="onCropperCancel()"
+  ></app-image-cropper>
 </div>
 

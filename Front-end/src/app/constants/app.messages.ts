@@ -102,7 +102,8 @@ export const APP_MESSAGES = {
     MAX_LENGTH: (fieldName: string, maxLength: number) => 
       `${fieldName} must not exceed ${maxLength} characters`,
     PASSWORD_MISMATCH: 'Passwords do not match',
-    PASSWORD_SAME_AS_CURRENT: 'New password must be different from your current password'
+    PASSWORD_SAME_AS_CURRENT: 'New password must be different from your current password',
+    PASSWORD_WEAK: 'Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number'
   },
 
   // Form Field Labels

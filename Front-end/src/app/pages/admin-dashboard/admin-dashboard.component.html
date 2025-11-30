@@ -689,6 +689,22 @@
           </div>
         </div>
       </form>
+
+      <!-- Club Image Cropper Modal -->
+      <app-image-cropper
+        *ngIf="showClubImageCropper && fileForClubImageCropping"
+        [imageFile]="fileForClubImageCropping"
+        (imageCropped)="onClubImageCropped($event)"
+        (cancel)="onClubImageCropperCancel()"
+      ></app-image-cropper>
+
+      <!-- Club Logo Cropper Modal -->
+      <app-image-cropper
+        *ngIf="showClubLogoCropper && fileForClubLogoCropping"
+        [imageFile]="fileForClubLogoCropping"
+        (imageCropped)="onClubLogoCropped($event)"
+        (cancel)="onClubLogoCropperCancel()"
+      ></app-image-cropper>
     </div>
 
     <!-- Audit Log Tab -->
