@@ -145,7 +145,7 @@ export const APP_MESSAGES = {
     // Placeholders and Hints
     PROFILE_PICTURE_OPTIONAL: 'Profile Picture (Optional)',
     PROFILE_PICTURE_HINT: 'JPG or PNG, max 2MB',
-    SEARCH_MEMBERS: 'Search members by name or email...',
+    SEARCH_MEMBERS: 'Search members by name...',
     SELECT_GENDER: 'Select Gender',
     PLACEHOLDER_ENTER_FULL_NAME: 'Enter your name or organization name',
     PLACEHOLDER_ENTER_EMAIL: 'Enter your email address',
@@ -160,8 +160,7 @@ export const APP_MESSAGES = {
     MEMBERS_SUBTITLE: (clubName: string) => `Meet the amazing members of ${clubName}`,
     MEMBERS_SORT: {
       LABEL: 'Sort by:',
-      NAME: 'Name',
-      EMAIL: 'Email'
+      NAME: 'Name'
     },
     CONTACT_TITLE: 'Contact Us',
     CONTACT_SUBTITLE: (clubName: string) => `Get in touch with ${clubName} - We'd love to hear from you!`,

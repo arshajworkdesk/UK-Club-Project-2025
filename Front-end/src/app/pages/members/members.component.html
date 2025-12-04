@@ -8,7 +8,7 @@
     <div class="filters-top">
       <div>
         <p class="filters-title">Find members</p>
-        <p class="filters-subtitle">Search by name or email and change the ordering with one tap.</p>
+        <p class="filters-subtitle">Search by name and change the ordering with one tap.</p>
       </div>
       <button type="button" class="filters-reset-btn" (click)="resetMemberFilters()" [disabled]="!searchTerm && sortBy === 'name'">
         Reset
@@ -45,14 +45,6 @@
             <span>👤</span>
             {{ APP_MESSAGES.UI.MEMBERS_SORT.NAME }}
           </button>
-          <button 
-            type="button" 
-            class="sort-pill" 
-            [class.active]="sortBy === 'email'" 
-            (click)="setSort('email')">
-            <span>✉️</span>
-            {{ APP_MESSAGES.UI.MEMBERS_SORT.EMAIL }}
-          </button>
         </div>
       </div>
     </div>
@@ -85,7 +77,6 @@
         </div>
         <div class="member-info">
           <h3 class="member-name">{{ member.fullName }}</h3>
-          <p class="member-email">{{ member.email }}</p>
           <div class="member-meta" *ngIf="member.role">
             <span class="role-badge" [class.role-admin]="member.role === 'admin'" [class.role-manager]="member.role === 'manager'" [class.role-member]="member.role === 'member'">
               {{ formatRole(member.role) }}
