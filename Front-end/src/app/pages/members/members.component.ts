@@ -15,7 +15,7 @@ export class MembersComponent implements OnInit {
   filteredMembers: Member[] = [];
   isLoading = true;
   searchTerm = '';
-  sortBy: 'name' | 'email' = 'name';
+  sortBy: 'name' = 'name';
   clubName: string = APP_CONSTANTS.BRAND_NAME;
 
   // Expose constants for template
@@ -72,8 +72,7 @@ export class MembersComponent implements OnInit {
     } else {
       const term = this.searchTerm.toLowerCase();
       this.filteredMembers = this.members.filter(member =>
-        member.fullName.toLowerCase().includes(term) ||
-        member.email.toLowerCase().includes(term)
+        member.fullName.toLowerCase().includes(term)
       );
     }
     // Apply current sort after filtering
@@ -82,12 +81,8 @@ export class MembersComponent implements OnInit {
 
   private applySort(): void {
     this.filteredMembers = [...this.filteredMembers].sort((a, b) => {
-      if (this.sortBy === 'email') {
-        return a.email.localeCompare(b.email);
-      } else {
-        // Default to name sorting
-        return a.fullName.localeCompare(b.fullName);
-      }
+      // Sort by name
+      return a.fullName.localeCompare(b.fullName);
     });
   }
 
@@ -95,7 +90,7 @@ export class MembersComponent implements OnInit {
     this.applySort();
   }
 
-  setSort(sort: 'name' | 'email'): void {
+  setSort(sort: 'name'): void {
     if (this.sortBy !== sort) {
       this.sortBy = sort;
       this.applySort();
