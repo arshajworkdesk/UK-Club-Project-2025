@@ -49,7 +49,6 @@ export class ProfileEditComponent implements OnInit {
   ) {
     this.profileForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
-      email: [{ value: '', disabled: true }], // Read-only - disabled at form creation
       dateOfBirth: ['', [Validators.required]],
       gender: ['', [Validators.required]]
     });
@@ -73,10 +72,9 @@ export class ProfileEditComponent implements OnInit {
         next: (members) => {
           this.userProfile = members.find(m => m.id === currentUser.id) || null;
           if (this.userProfile) {
-            // Populate form with current user data
+            // Populate form with current user data (email excluded for privacy)
             this.profileForm.patchValue({
               fullName: this.userProfile.fullName || '',
-              email: this.userProfile.email || '',
               dateOfBirth: this.userProfile.dateOfBirth ? this.formatDateForInput(this.userProfile.dateOfBirth) : '',
               gender: this.userProfile.gender || ''
             });
@@ -289,7 +287,6 @@ export class ProfileEditComponent implements OnInit {
   getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
       fullName: APP_MESSAGES.FORM_LABELS.FULL_NAME,
-      email: APP_MESSAGES.FORM_LABELS.EMAIL,
       dateOfBirth: APP_MESSAGES.FORM_LABELS.DATE_OF_BIRTH,
       gender: APP_MESSAGES.FORM_LABELS.GENDER
     };
