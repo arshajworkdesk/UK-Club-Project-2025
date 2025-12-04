@@ -35,7 +35,7 @@ export interface LoginData {
 export interface Member {
   id: number;
   fullName: string;
-  email: string;
+  email?: string; // Optional - excluded from public member endpoints for privacy/security
   dateOfBirth?: string; // Backend returns dateOfBirth (LocalDate as string)
   gender?: string;
   profilePictureUrl?: string; // Backend returns profilePictureUrl
